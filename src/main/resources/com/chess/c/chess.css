@@ -1,0 +1,13 @@
+.root{
+    -fx-background-color: "#212121";
+}
+.white {
+    -fx-background-color: beige;
+    -fx-border-width: 10px;
+}
+
+/* Farben für dunkle Felder */
+.black {
+    -fx-background-color: brown;
+    -fx-border-width: 10px;
+}
