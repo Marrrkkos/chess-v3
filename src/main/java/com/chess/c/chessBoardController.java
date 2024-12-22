@@ -4,12 +4,21 @@ import board.Board;
 import board.Field;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.stage.Stage;
 import player.Player;
 import player.Turn;
 import player.moveTree;
@@ -47,10 +56,31 @@ public class chessBoardController implements Serializable {
     String m1 = "";
     String m2 = "";
     String moveView = "";
+
+    String chosenOpening = "hello";
+
     @FXML
     private GridPane gridPane;
     private Button[][] buttonArray = new Button[8][8];
 
+
+    private Stage stage;
+    private Scene scene;
+    private Parent root;
+    public void printChosenOpening(){
+        System.out.println(chosenOpening);
+    }
+    public void setChosenOpening(String chosen){
+        chosenOpening = chosen;
+    }
+    @FXML
+    public void switchToOpeningScene(ActionEvent event) throws IOException{
+        Parent root = FXMLLoader.load((getClass().getResource("chooseOpening.fxml")));
+        stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
+        scene = new Scene(root);
+        stage.setScene(scene);
+        stage.show();
+    }
     @FXML
     public void setForwardButton(ActionEvent event){
         if(ZuegeSpeicher.size()>Zuege.size()) {
@@ -117,10 +147,8 @@ public class chessBoardController implements Serializable {
     public void saveLine(){
 
         moveTree.add(ZuegeSpeicher);
-        System.out.println(moveTree);
-        moveTree.traverseLevelOrder();
 
-        String dateiName = "moveTree.ser";
+        String dateiName = "Openings/" + chosenOpening;
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dateiName))) {
             oos.writeObject(moveTree);
@@ -131,12 +159,16 @@ public class chessBoardController implements Serializable {
     }
     @FXML
     public void loadLine(){
-        String dateiName = "moveTree.ser";
+        String dateiName = "Openings/" + chosenOpening;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dateiName))) {
-            moveTree geladenerMoveTree = (moveTree) ois.readObject();
-            System.out.println("Objekt geladen: " + geladenerMoveTree);
-            geladenerMoveTree.traverseLevelOrder();
-            System.out.println(geladenerMoveTree);
+            moveTree = (moveTree) ois.readObject();
+
+            System.out.println("Objekt geladen: " + moveTree);
+            System.out.println("-------------------------------------------------------------------------------------");
+            moveTree.traverseLevelOrder();
+            System.out.println("-------------------------------------------------------------------------------------");
+            System.out.println(moveTree);
+
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Fehler beim Laden: " + e.getMessage());
         }
@@ -174,6 +206,8 @@ public class chessBoardController implements Serializable {
 
                     manageMoveView(m1, m2);
 
+                    drawArrow(m1, m2);
+
                     player.Colour = !player.Colour;
                     Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2));
                     ZuegeSpeicher = (ArrayList<Turn>) Zuege.clone();
@@ -194,7 +228,38 @@ public class chessBoardController implements Serializable {
 
         }
     }
+    public void drawArrow(String a, String b) {
+        int x = 0, y = 0;
+        int p = 0, m = 0;
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (a.equals(buttonArray[i][j].getId())) {
+                    y = (int) buttonArray[i][j].getLayoutY();
+                    x = (int) buttonArray[i][j].getLayoutX();
 
+                }
+                if (b.equals(buttonArray[i][j].getId())) {
+                    p = (int) buttonArray[i][j].getLayoutX();
+                    m = (int) buttonArray[i][j].getLayoutX();
+                }
+            }
+        }
+        System.out.println(x);
+        System.out.println(y);
+        System.out.println(p);
+        System.out.println(m);
+        Line line = new Line();
+        gridPane.getChildren().add(line);
+        line.setManaged(false);
+
+        line.setStrokeWidth(20);
+        line.setStroke(Color.LIGHTGREEN);
+        line.setOpacity(0.8);
+        line.setStartX(x+50);
+        line.setStartY(y+50);
+        line.setEndX(p+50);
+        line.setEndY(m+50);
+    }
 
     private void manageMoveView(String a, String b){
         if(player.Colour){
@@ -208,8 +273,11 @@ public class chessBoardController implements Serializable {
     private void resetMoveView(){
         movesView.getItems().clear();
     }
+    Canvas canvas;
     @FXML
     public void initialize() {
+
+
         board.initializeBoard();
         Field[][] field = board.getBoard();
         for (Node node : gridPane.getChildren()) {

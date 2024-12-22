@@ -11,7 +11,7 @@ import java.io.IOException;
 public class main extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        Parent root = FXMLLoader.load(getClass().getResource("main.fxml"));
+        Parent root = FXMLLoader.load(getClass().getResource("chooseOpening.fxml"));
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("chess.css").toExternalForm());
         stage.setScene(scene);
