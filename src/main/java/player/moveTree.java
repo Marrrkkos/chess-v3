@@ -1,24 +1,30 @@
 package player;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class moveTree implements Serializable {
-    Knoten Wurzel;
+
+    @Serial
+    private static final long serialVersionUID = 3403983621295530595L;
+    private final Knoten Wurzel;
 
     public moveTree(Turn turn){
         this.Wurzel = new Knoten(turn);
     }
     public void add(ArrayList<Turn> Zuege){
-        Knoten wurzel = Wurzel;
-        Knoten knoten = wurzel;
+        Knoten knoten = Wurzel;
         boolean is = false;
         for(Turn turn : Zuege){
 
             if(!knoten.getChildren().isEmpty()) {
                 for (Knoten knoten1 : knoten.getChildren()) {
+                    System.out.println("turn.hashCode(): " + turn.hashCode());
+                    System.out.println("knoten1.turn.hashCode(): " + knoten1.turn.hashCode());
                     if (knoten1.turn.equals(turn)) {
+                        System.out.println("jetzt abeeer");
                         knoten = knoten1;
                         is = true;
                     }
@@ -36,7 +42,6 @@ public class moveTree implements Serializable {
         }
     }
     public void traverseLevelOrder() {
-        if (Wurzel == null) return;
 
         List<Knoten> aktuelleEbene = new ArrayList<>();
         aktuelleEbene.add(Wurzel);
@@ -50,6 +55,25 @@ public class moveTree implements Serializable {
             System.out.println(); // Zeilenumbruch für die nächste Ebene
             aktuelleEbene = naechsteEbene;
         }
+    }
+    public ArrayList<Turn> getCurrentChildren(ArrayList<Turn> Zuege){
+        ArrayList<Turn> possibleMoves = new ArrayList<>();
+        Knoten knoten = Wurzel;
+        for(Turn turn : Zuege){
+            if(!knoten.getChildren().isEmpty()) {
+                for (Knoten knoten1 : knoten.getChildren()) {
+
+                    if (knoten1.turn.equals(turn)) {
+                        knoten = knoten1;
+                    }
+                }
+            }
+        }
+
+        for(Knoten knoten1: knoten.getChildren()){
+            possibleMoves.add(knoten1.turn);
+        }
+        return possibleMoves;
     }
     public String toString() {
         List<String> pfade = new ArrayList<>();

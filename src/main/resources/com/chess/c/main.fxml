@@ -123,7 +123,7 @@
             <Font size="30.0" />
          </font>
       </Button>
-      <ListView layoutX="924.0" layoutY="328.0" prefHeight="288.0" prefWidth="282.0" AnchorPane.leftAnchor="924.0" AnchorPane.topAnchor="328.0" />
+      <ListView fx:id="openingsView" layoutX="924.0" layoutY="328.0" prefHeight="288.0" prefWidth="282.0" AnchorPane.leftAnchor="924.0" AnchorPane.topAnchor="328.0" />
       <ListView fx:id="movesView" layoutX="924.0" layoutY="50.0" prefHeight="258.0" prefWidth="282.0" />
       <Button layoutX="900.0" layoutY="645.0" mnemonicParsing="false" onAction="#switchToOpeningScene" prefHeight="86.0" prefWidth="165.0" text="Opening" />
     </children>

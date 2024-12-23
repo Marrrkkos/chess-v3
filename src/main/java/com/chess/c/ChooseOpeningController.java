@@ -10,12 +10,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import player.Turn;
 import player.moveTree;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 
 public class ChooseOpeningController {
     @FXML
@@ -71,13 +73,14 @@ public class ChooseOpeningController {
 
 
         chessBoardController.setChosenOpening(chosenOpening);
-        chessBoardController.loadLine();
+
 
         stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("chess.css").toExternalForm());
         stage.setScene(scene);
         stage.show();
+        chessBoardController.loadLine();
     }
 
     public void loadOpenings(){

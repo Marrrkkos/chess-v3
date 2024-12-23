@@ -1,9 +1,12 @@
 package player;
 
+import java.io.Serial;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Turn implements Serializable {
-
+    @Serial
+    private static final long serialVersionUID = -3823182165392856506L;
     public int ZugNummer;
     public String a1;
     public String b1;
@@ -23,6 +26,17 @@ public class Turn implements Serializable {
 
     public String toString() {
 
-        return ZugNummer + ":" + a1 + "-" + b1;
+        return ZugID + "<>" + ZugNummer + ":" + a1 + "-" + b1;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; // Referenzgleichheit
+        if (obj == null || getClass() != obj.getClass()) return false; // Unterschiedliche Klassen
+
+        Turn other = (Turn) obj; // Cast
+        return this.ZugNummer == other.ZugNummer &&
+                this.a1.equals(other.a1) &&
+                this.b1.equals(other.b1) &&
+                this.ZugID == other.ZugID; // Vergleich der Strings
     }
 }
