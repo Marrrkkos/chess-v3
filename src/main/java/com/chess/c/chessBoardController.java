@@ -8,14 +8,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
@@ -29,10 +27,13 @@ import player.Turn;
 import player.moveTree;
 
 import java.io.*;
+import java.lang.classfile.instruction.SwitchCase;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class chessBoardController implements Serializable {
+
+    moveTree moveTree = new moveTree(new Turn());
 
     final int FIELDSIZE = 100;
 
@@ -64,7 +65,6 @@ public class chessBoardController implements Serializable {
     String moveView = "";
 
     Boolean promotion = false;
-    String promotionCoordinate = "";
 
     String chosenOpening = "";
 
@@ -76,22 +76,19 @@ public class chessBoardController implements Serializable {
     private Stage stage;
     private Scene scene;
     private Parent root;
-    public void printChosenOpening(){
-        System.out.println(chosenOpening);
-    }
     public void setChosenOpening(String chosen){
         chosenOpening = chosen;
     }
     @FXML
     public void switchToOpeningScene(ActionEvent event) throws IOException{
-        Parent root = FXMLLoader.load((getClass().getResource("chooseOpening.fxml")));
+        root = FXMLLoader.load((getClass().getResource("chooseOpening.fxml")));
         stage = (Stage) ((Node)event.getSource()).getScene().getWindow();
         scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
     }
     @FXML
-    public void setForwardButton(ActionEvent event){
+    public void setForwardButton(){
         if(ZuegeSpeicher.size()>Zuege.size()) {
             resetMoveView();
             player.Colour = true;
@@ -100,16 +97,17 @@ public class chessBoardController implements Serializable {
             Zuege.add(a);
             count=0;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
             }
             drawPieces();
+            repaintArrows();
         }
     }
     @FXML
-    public void setBackwardButton(ActionEvent event){
+    public void setBackwardButton(){
         if(!Zuege.isEmpty()) {
             resetMoveView();
             board.resetPieces();
@@ -117,26 +115,28 @@ public class chessBoardController implements Serializable {
             count=0;
             player.Colour = true;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
             }
 
             drawPieces();
+            repaintArrows();
         }
     }
     @FXML
-    public void setToStartButton(ActionEvent event){
+    public void setToStartButton(){
         resetMoveView();
         board.resetPieces();
         player.Colour = true;
         Zuege.clear();
         drawPieces();
         count = 0;
+        repaintArrows();
     }
     @FXML
-    public void setToEndButton(ActionEvent event){
+    public void setToEndButton(){
         resetMoveView();
         board.resetPieces();
         Zuege.clear();
@@ -144,14 +144,14 @@ public class chessBoardController implements Serializable {
         player.Colour = true;
         for (Turn turn : ZuegeSpeicher) {
             manageMoveView(turn.a1, turn.b1);
-            player.Colour = !player.Colour;
             Zuege.add(turn);
-            board.doSimpleMove(turn.a1, turn.b1);
+            board.doSimpleMove(turn.a1, turn.b1, player.Colour);
+            player.Colour = !player.Colour;
             count++;
         }
         drawPieces();
+        repaintArrows();
     }
-    moveTree moveTree = new moveTree(new Turn());
     @FXML
     public void saveLine(){
 
@@ -164,6 +164,36 @@ public class chessBoardController implements Serializable {
             System.out.println("Objekt gespeichert.");
         } catch (IOException e) {
             System.out.println("Fehler beim Speichern: " + e.getMessage());
+        }
+    }
+    @FXML
+    public void removeLine(){
+        if(!Zuege.isEmpty()) {
+            System.out.println(Zuege);
+            moveTree.remove(Zuege);
+            System.out.println(Zuege);
+            resetMoveView();
+            board.resetPieces();
+            count=0;
+            player.Colour = true;
+            for (Turn turn : Zuege) {
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour);
+                manageMoveView(turn.a1, turn.b1);
+                count++;
+                player.Colour = !player.Colour;
+            }
+
+            drawPieces();
+            repaintArrows();
+
+            String dateiName = "Openings/" + chosenOpening;
+
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dateiName))) {
+                oos.writeObject(moveTree);
+                System.out.println("Objekt gespeichert.");
+            } catch (IOException e) {
+                System.out.println("Fehler beim Speichern: " + e.getMessage());
+            }
         }
     }
     @FXML
@@ -193,59 +223,25 @@ public class chessBoardController implements Serializable {
     @FXML
     public void boardView(ActionEvent event){
         if(promotion){
-            int x = 0;
-            if(Objects.equals(((Button) event.getSource()).getId(), "c5")){
-                x = 1;
-            }
-            if(Objects.equals(((Button) event.getSource()).getId(), "d5")){
-                x = 2;
-            }
-            if(Objects.equals(((Button) event.getSource()).getId(), "e5")){
-                x = 4;
-            }
-            if(Objects.equals(((Button) event.getSource()).getId(), "f5")){
-                x = 3;
-            }
-            board.promotion(x,m1,m2);
-            while(!openingsView.getItems().isEmpty()) {
-                openingsView.getItems().removeLast();
-            }
-            removeWPossible();
-            drawPieces();
-
-            manageMoveView(m1, m2);
-
-            drawArrow(m1, m2);
-
-            player.Colour = !player.Colour;
-            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2));
-            ZuegeSpeicher = (ArrayList<Turn>) Zuege.clone();
-            possibleBoard.clearBoard();
-            count++;
-            ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
-            removeAllArrows();
-            drawAllArrows(nextMoves);
-            for(Turn turn: nextMoves) {
-                openingsView.getItems().add(turn.a1 + " " + turn.b1);
-            }
-
-            for (int i = 0; i < 8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    buttonArray[i][j].setVisible(true);
-                }
-            }
-            drawPieces();
+            int a = doPromotion(event);
+            nextTurn(a);
             m1 = "";
             m2 = "";
             promotion = false;
         }
         if (m1.isEmpty()) {
+
             m1 = ((Button) event.getSource()).getId();
+
             if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
                 long startTime = System.nanoTime();
+
                 possibleBoard = board.getPossible(m1, Zuege);
+
                 long endTime = System.nanoTime();
+
                 System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
+
                 if (possibleBoard.Possibles()) {
                     drawWPossible();
                 }else{
@@ -256,82 +252,132 @@ public class chessBoardController implements Serializable {
             }
         } else {
             m2 = ((Button) event.getSource()).getId();
-            boolean x = false;
-            // Überprüfe auf Promotion
+            boolean x;
             if (board.checkPromotion(m1, m2)) {
-                for (int i = 0; i < 8; i++) {
-                    for (int j = 0; j < 8; j++) {
-                        buttonArray[i][j].setVisible(false);
-                    }
-                }
-                buttonArray[3][2].setVisible(true);
-                buttonArray[3][3].setVisible(true);
-                buttonArray[3][4].setVisible(true);
-                buttonArray[3][5].setVisible(true);
-
-                Queen queen = new Queen(player.Colour);
-                Rook rook = new Rook(player.Colour, true);
-                Bishop bishop = new Bishop(player.Colour);
-                Knight knight = new Knight(player.Colour);
-
-                ImageView queenView = new ImageView(queen.getImage());
-                ImageView rookView = new ImageView(rook.getImage());
-                ImageView bishopView = new ImageView(bishop.getImage());
-                ImageView knightView = new ImageView(knight.getImage());
-
-                buttonArray[3][2].setGraphic(queenView);
-                buttonArray[3][3].setGraphic(rookView);
-                buttonArray[3][4].setGraphic(bishopView);
-                buttonArray[3][5].setGraphic(knightView);
-
-                buttonArray[3][2].setVisible(true);
-                buttonArray[3][3].setVisible(true);
-                buttonArray[3][4].setVisible(true);
-                buttonArray[3][5].setVisible(true);
-
-                promotion = true;
-                //promotionPanel.setVisible(true); // Zeige die Promotion-Buttons an
+                showPromotion();
             } else {
                 x = board.doMove(m1, m2, Zuege);
-
                 if (x) {
-                    while(!openingsView.getItems().isEmpty()) {
-                        openingsView.getItems().removeLast();
-                    }
-                    removeWPossible();
-                    drawPieces();
-
-                    manageMoveView(m1, m2);
-
-                    drawArrow(m1, m2);
-
-                    player.Colour = !player.Colour;
-                    Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2));
-                    ZuegeSpeicher = (ArrayList<Turn>) Zuege.clone();
-                    possibleBoard.clearBoard();
-                    count++;
-                    ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
-                    removeAllArrows();
-                    drawAllArrows(nextMoves);
-                    for(Turn turn: nextMoves) {
-                        openingsView.getItems().add(turn.a1 + " " + turn.b1);
-                    }
-                    /*if (!board.checkCheckmate(Zuege, player.Colour, board)){
-                        System.out.println("Checkmate");
-                        for(Turn turn : Zuege){
-                            System.out.println(turn.a1 + "|" + turn.b1);
-                        }
-                    }*/
+                    nextTurn(0);
+                    System.out.println(Zuege);
                 }
+
                 m1 = "";
                 m2 = "";
             }
 
         }
     }
+    private int doPromotion(ActionEvent event){
+        int x = 0;
+        if(Objects.equals(((Button) event.getSource()).getId(), "c5")){
+            x = 1;
+        }
+        if(Objects.equals(((Button) event.getSource()).getId(), "d5")){
+            x = 2;
+        }
+        if(Objects.equals(((Button) event.getSource()).getId(), "e5")){
+            x = 4;
+        }
+        if(Objects.equals(((Button) event.getSource()).getId(), "f5")){
+            x = 3;
+        }
+        board.promotion(x,m1,m2);
+
+
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                buttonArray[i][j].setVisible(true);
+            }
+        }
+        return x;
+    }
+    private void showPromotion(){
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                buttonArray[i][j].setVisible(false);
+            }
+        }
+        buttonArray[3][2].setVisible(true);
+        buttonArray[3][3].setVisible(true);
+        buttonArray[3][4].setVisible(true);
+        buttonArray[3][5].setVisible(true);
+
+        Queen queen = new Queen(player.Colour);
+        Rook rook = new Rook(player.Colour, true);
+        Bishop bishop = new Bishop(player.Colour);
+        Knight knight = new Knight(player.Colour);
+
+        ImageView queenView = new ImageView(queen.getImage());
+        ImageView rookView = new ImageView(rook.getImage());
+        ImageView bishopView = new ImageView(bishop.getImage());
+        ImageView knightView = new ImageView(knight.getImage());
+
+        buttonArray[3][2].setGraphic(queenView);
+        buttonArray[3][3].setGraphic(rookView);
+        buttonArray[3][4].setGraphic(bishopView);
+        buttonArray[3][5].setGraphic(knightView);
+
+        buttonArray[3][2].setVisible(true);
+        buttonArray[3][3].setVisible(true);
+        buttonArray[3][4].setVisible(true);
+        buttonArray[3][5].setVisible(true);
+
+        promotion = true;
+    }
+    private void nextTurn(int p){
+        removeWPossible();
+        drawPieces();
+
+
+        if(promotion){
+            System.out.println("hallo");
+            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, (m2 + "" + writePromotion(p))));
+            manageMoveView(m1, m2 + "" + writePromotion(p));
+        }else {
+            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2));
+            manageMoveView(m1, m2);
+        }
+        player.Colour = !player.Colour;
+        ZuegeSpeicher = (ArrayList<Turn>) Zuege.clone();
+        possibleBoard.clearBoard();
+        count++;
+        repaintArrows();
+
+                    /*if (!board.checkCheckmate(Zuege, player.Colour, board)){
+                        System.out.println("Checkmate");
+                        for(Turn turn : Zuege){
+                            System.out.println(turn.a1 + "|" + turn.b1);
+                        }
+                    }*/
+    }
+    private String writePromotion(int p){
+        return switch (p) {
+            case 1 -> "=Q";
+            case 2 -> "=R";
+            case 3 -> "=K";
+            case 4 -> "=B";
+            default -> "=Q";
+        };
+    }
+    private void repaintArrows(){
+        ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
+        removeAllArrows();
+        drawAllArrows(nextMoves);
+        while(!openingsView.getItems().isEmpty()) {
+            openingsView.getItems().removeLast();
+        }
+        for(Turn turn: nextMoves) {
+            openingsView.getItems().add(turn.a1 + " " + turn.b1);
+        }
+    }
     public void drawAllArrows(ArrayList<Turn> Zuege){
         for(Turn turn: Zuege){
-            drawArrow(turn.a1, turn.b1);
+            if(turn.b1.contains("=")) {
+                drawArrow(turn.a1, turn.b1.substring(0, 2));
+            }else{
+                drawArrow(turn.a1, turn.b1);
+            }
         }
     }
     public void drawArrow(String a, String b) {

@@ -30,12 +30,39 @@ public class Board{
         }
         initializePieces();
     }
-    public void doSimpleMove(String a, String b){
+    public void doSimpleMove(String a, String b, boolean colour){
         int[] pos1 = NameToCoordinate(a);
         int[] pos2 = NameToCoordinate(b);
+        if(b.contains("=")){
+            String c = b.substring(0,2);
+            int[] pos3 = NameToCoordinate(c);
+            char promotedPiece = b.charAt(3);
 
-        Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
-        Brett[pos1[0]][pos1[1]].piece = null;
+            if(promotedPiece == 'Q'){
+
+                Brett[pos3[0]][pos3[1]].piece = new Queen(colour);
+                Brett[pos1[0]][pos1[1]].piece = null;
+
+            }else if(promotedPiece == 'R'){
+
+                Brett[pos3[0]][pos3[1]].piece = new Rook(colour, false);
+                Brett[pos1[0]][pos1[1]].piece = null;
+
+            }else if(promotedPiece == 'B'){
+
+                Brett[pos3[0]][pos3[1]].piece = new Bishop(colour);
+                Brett[pos1[0]][pos1[1]].piece = null;
+
+            }else if(promotedPiece == 'K'){
+
+                Brett[pos3[0]][pos3[1]].piece = new Knight(colour);
+                Brett[pos1[0]][pos1[1]].piece = null;
+            }
+
+        }else{
+            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+            Brett[pos1[0]][pos1[1]].piece = null;
+        }
     }
     public boolean doMove(String a, String b, ArrayList<Turn> Zuege){
         int[] pos1 = NameToCoordinate(a);
@@ -150,6 +177,9 @@ public class Board{
     public Boolean checkPromotion(String a, String b) {
         int[] pos1 = NameToCoordinate(a);
         int[] pos2 = NameToCoordinate(b);
+        if(!Brett[pos2[0]][pos2[1]].isPossible){
+            return false;
+        }
         if(Brett[pos1[0]][pos1[1]].piece == null){
             return false;
         }

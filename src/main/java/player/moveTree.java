@@ -21,10 +21,8 @@ public class moveTree implements Serializable {
 
             if(!knoten.getChildren().isEmpty()) {
                 for (Knoten knoten1 : knoten.getChildren()) {
-                    System.out.println("turn.hashCode(): " + turn.hashCode());
-                    System.out.println("knoten1.turn.hashCode(): " + knoten1.turn.hashCode());
+
                     if (knoten1.turn.equals(turn)) {
-                        System.out.println("jetzt abeeer");
                         knoten = knoten1;
                         is = true;
                     }
@@ -40,6 +38,26 @@ public class moveTree implements Serializable {
                 knoten = knoten.getChildren().getFirst();
             }
         }
+    }
+    public void remove(ArrayList<Turn> Zuege){
+        Knoten knoten = Wurzel;
+        Turn removeTurn = Zuege.removeLast();
+
+        for(Turn turn : Zuege){
+            for (Knoten knoten1 : knoten.getChildren()) {
+
+                if (knoten1.turn.equals(turn)) {
+                    knoten = knoten1;       //parent
+                }
+            }
+        }
+            for (Knoten knoten2 : knoten.getChildren()) {
+
+                if (knoten2.turn.equals(removeTurn)) {
+                    knoten.getChildren().remove(knoten2);
+                    break;
+                }
+            }
     }
     public void traverseLevelOrder() {
 
@@ -59,22 +77,31 @@ public class moveTree implements Serializable {
     public ArrayList<Turn> getCurrentChildren(ArrayList<Turn> Zuege){
         ArrayList<Turn> possibleMoves = new ArrayList<>();
         Knoten knoten = Wurzel;
+        Boolean hasChildren = false;
+
         for(Turn turn : Zuege){
             if(!knoten.getChildren().isEmpty()) {
                 for (Knoten knoten1 : knoten.getChildren()) {
 
                     if (knoten1.turn.equals(turn)) {
                         knoten = knoten1;
+                        hasChildren = true;
                     }
                 }
             }
+            if(!hasChildren){
+                return new ArrayList<>();
+            }
+            hasChildren = false;
         }
 
         for(Knoten knoten1: knoten.getChildren()){
             possibleMoves.add(knoten1.turn);
         }
+        System.out.println(possibleMoves);
         return possibleMoves;
     }
+
     public String toString() {
         List<String> pfade = new ArrayList<>();
         erstellePfade(Wurzel, "", pfade);

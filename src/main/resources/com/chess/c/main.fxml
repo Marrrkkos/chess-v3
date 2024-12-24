@@ -126,5 +126,6 @@
       <ListView fx:id="openingsView" layoutX="924.0" layoutY="328.0" prefHeight="288.0" prefWidth="282.0" AnchorPane.leftAnchor="924.0" AnchorPane.topAnchor="328.0" />
       <ListView fx:id="movesView" layoutX="924.0" layoutY="50.0" prefHeight="258.0" prefWidth="282.0" />
       <Button layoutX="900.0" layoutY="645.0" mnemonicParsing="false" onAction="#switchToOpeningScene" prefHeight="86.0" prefWidth="165.0" text="Opening" />
+      <Button layoutX="1120.0" layoutY="750.0" mnemonicParsing="false" onAction="#removeLine" prefHeight="100.0" prefWidth="124.0" text="remove" />
     </children>
 </AnchorPane>
