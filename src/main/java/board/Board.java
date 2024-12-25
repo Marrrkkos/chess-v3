@@ -318,7 +318,7 @@ public class Board{
 
 
             Field[][] field = piece.possibleFields(pos1, Brett, Zuege); // <----
-            long startTime = System.nanoTime();
+
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
 
@@ -337,8 +337,6 @@ public class Board{
 
                 }
             }
-            long endTime = System.nanoTime();
-            System.out.println("all checkichecks Execution time:  " + (endTime - startTime) + " ns");
             return new Board(field);
         }
     }
@@ -346,6 +344,7 @@ public class Board{
         Field[][] WhitePiecesPossible = new Field[8][8];
         Field[][] BlackPiecesPossible = new Field[8][8];
         Field[][] BrettCopy = new Field[8][8];
+
         copy(Brett, WhitePiecesPossible);
         copy(Brett, BlackPiecesPossible);
         copy(Brett, BrettCopy);
@@ -353,8 +352,10 @@ public class Board{
         int WhiteKingX=9, WhiteKingY=9;
         int BlackKingX=9, BlackKingY=9;
         //White Pieces
+
         WhitePiecesPossible = allPossibleMoves(true,Brett,Zuege);
         BlackPiecesPossible = allPossibleMoves(false, Brett, Zuege);
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (BrettCopy[i][j].piece != null) {
@@ -382,6 +383,7 @@ public class Board{
                 return false;
             }
         }
+
         return true;
 
     }

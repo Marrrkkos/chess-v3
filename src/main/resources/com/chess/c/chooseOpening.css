@@ -1,0 +1,126 @@
+.root {
+    -fx-background-color: #212121; /* Dunkler Hintergrund */
+}
+
+/* ListView-Zellen */
+.list-cell {
+    -fx-padding: 10;
+    -fx-font-size: 16px;
+    -fx-font-family: "Arial";
+    -fx-text-fill: #eeeeee; /* Helle Schriftfarbe für dunklen Hintergrund */
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-border-color: transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.list-cell:odd {
+    -fx-background-color: linear-gradient(to right, #383838, #454545); /* Sanfte Grautöne */
+}
+
+.list-cell:even {
+    -fx-background-color: linear-gradient(to right, #454545, #383838);
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: #5e5e5e; /* Leicht aufgehellt bei Hover */
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #6f6f6f;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0.5, 0, 0);
+}
+
+.list-cell:selected {
+    -fx-background-color: #6f6f6f; /* Kontrastreich für Auswahl */
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+    -fx-border-color: #5e5e5e;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+}
+
+/* Buttons */
+.button {
+    -fx-padding: 10 20;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-text-fill: #ffffff;
+    -fx-background-radius: 5px;
+    -fx-border-width: 0;
+    -fx-cursor: hand;
+}
+
+/* "ADD"-Button: Runde Form */
+#addButton {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
+
+#addButton:hover {
+    -fx-background-color: #854141; /* Helleres Braun */
+}
+
+#addButton:pressed {
+    -fx-background-color: #5e5e5e; /* Noch dunkler bei Klick */
+}
+
+/* "DELETE"-Button: Rechteckig */
+#deleteButton {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
+
+#deleteButton:hover {
+    -fx-background-color: #854141; /* Helleres Braun */
+}
+
+#deleteButton:pressed {
+    -fx-background-color: #5e5e5e; /* Noch dunklerer Ton */
+}
+
+/* "START"-Button: Rechteckig */
+#startButton {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
+
+#startButton:hover {
+    -fx-background-color: #854141; /* Helleres Braun */
+}
+
+#startButton:pressed {
+    -fx-background-color: #5e5e5e; /* Dunkler bei Klick */
+}
+
+/* "ADD OPENING"-Button: Runde Form */
+#addOpeningButton {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-background-radius: 50px;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
+
+#addOpeningButton:hover {
+    -fx-background-color: #854141; /* Helleres Braun */
+}
+
+#addOpeningButton:pressed {
+    -fx-background-color: #5e5e5e; /* Noch dunkler bei Klick */
+}
+

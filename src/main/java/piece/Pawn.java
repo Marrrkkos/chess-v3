@@ -6,6 +6,7 @@ import javafx.scene.image.ImageView;
 import player.Turn;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class  Pawn extends Piece {
     boolean colour;
@@ -16,9 +17,8 @@ public class  Pawn extends Piece {
 
     }
 
-    //TODO
-    Image WPawn = new Image(getClass().getResourceAsStream("/pieces/w-pawn.png"));
-    Image BPawn = new Image(getClass().getResourceAsStream("/pieces/b-pawn.png"));
+    Image WPawn = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-pawn.png")));
+    Image BPawn = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/b-pawn.png")));
     public Image getImage(){
         if (this.colour) {
             return WPawn;

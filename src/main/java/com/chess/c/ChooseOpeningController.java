@@ -13,10 +13,7 @@ import javafx.stage.Stage;
 import player.Turn;
 import player.moveTree;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.util.ArrayList;
 
 public class ChooseOpeningController {
@@ -37,7 +34,6 @@ public class ChooseOpeningController {
         openingList.setFocusTraversable(false);
         addButton.setVisible(false);
         deleteButton.setVisible(false);
-
         nameField.setVisible(true);
         addOpeningButton.setVisible(true);
     }
@@ -48,9 +44,10 @@ public class ChooseOpeningController {
     }
 
     @FXML
-    public void addOpening(){
+    public void addOpening() throws FileNotFoundException {
 
         openingList.getItems().add(nameField.getCharacters().toString());
+        new FileOutputStream("Openings/" + nameField.getCharacters().toString());
 
         nameField.setVisible(false);
         openingList.setOpacity(1);
@@ -89,20 +86,6 @@ public class ChooseOpeningController {
         assert dateinamen != null;
         for (String dateiname : dateinamen) {
             openingList.getItems().add(dateiname);
-        }
-    }
-    public void load(){
-        String dateiName = "";
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dateiName))) {
-            moveTree geladenerMoveTree = (moveTree) ois.readObject();
-
-            System.out.println("Objekt geladen: " + geladenerMoveTree);
-
-            geladenerMoveTree.traverseLevelOrder();
-            System.out.println(geladenerMoveTree);
-
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("Fehler beim Laden: " + e.getMessage());
         }
     }
 

@@ -18,8 +18,8 @@ public class Field {
     public static void copy(Field[][] a, Field[][] b){
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                b[i][j] = new Field("clone",new Pawn(false, false), false);
-
+                //b[i][j] = new Field("clone",new Pawn(false, false), false);
+                b[i][j] = new Field(a[i][j].name, a[i][j].piece, a[i][j].isPossible);
 
                 b[i][j].piece = a[i][j].piece;
                 b[i][j].isPossible = a[i][j].isPossible;

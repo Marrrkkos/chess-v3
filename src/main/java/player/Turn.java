@@ -11,15 +11,17 @@ public class Turn implements Serializable {
     public String a1;
     public String b1;
     int ZugID;
-
+    boolean playerColour;
     public Turn(int ZugID, int ZugNummer, String a1, String b1) {
         this.ZugNummer = ZugNummer;
         this.a1 = a1;
         this.b1 = b1;
         this.ZugID = ZugID;
     }
-    //Wurzel (ignore)
-    public Turn(){}
+    //Wurzel
+    public Turn(boolean playerColour){
+        this.playerColour = playerColour;
+    }
     public int getID(){
         return ZugID;
     }

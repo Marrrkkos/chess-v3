@@ -6,6 +6,7 @@ import javafx.scene.image.ImageView;
 import player.Turn;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 
 public class  King extends Piece {
@@ -16,9 +17,8 @@ public class  King extends Piece {
         this.hasMoved = hasMoved;
     }
 
-    //TODO
-    Image WKing = new Image(getClass().getResourceAsStream("/pieces/w-king.png"));
-    Image BKing = new Image(getClass().getResourceAsStream("/pieces/b-king.png"));
+    Image WKing = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-king.png")));
+    Image BKing = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/b-king.png")));
     public Image getImage(){
         if (this.colour) {
             return WKing;

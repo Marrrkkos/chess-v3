@@ -6,6 +6,7 @@ import javafx.scene.image.ImageView;
 import player.Turn;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Rook extends Piece {
     boolean colour;
@@ -15,9 +16,8 @@ public class Rook extends Piece {
         this.hasMoved = hasMoved;
     }
 
-    //TODO
-    Image WRook = new Image(getClass().getResourceAsStream("/pieces/w-rook.png"));
-    Image BRook = new Image(getClass().getResourceAsStream("/pieces/b-rook.png"));
+    Image WRook = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-rook.png")));
+    Image BRook = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/b-rook.png")));
     public Image getImage(){
         if (this.colour) {
             return WRook;

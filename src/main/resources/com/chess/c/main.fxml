@@ -98,34 +98,40 @@
             <Button fx:id="b8" maxHeight="100.0" maxWidth="100.0" minHeight="100.0" minWidth="100.0" mnemonicParsing="false" onAction="#boardView" prefHeight="100.0" prefWidth="100.0" styleClass="black" textAlignment="CENTER" GridPane.columnIndex="1" />
             </children>
         </GridPane>
-          <Button fx:id="forwardButton" layoutX="450.0" layoutY="875.0" mnemonicParsing="false" onAction="#setForwardButton" prefHeight="64.0" prefWidth="100.0" text="&gt;" textAlignment="CENTER" AnchorPane.leftAnchor="450.0" AnchorPane.topAnchor="875.0">
+          <Button fx:id="forwardButton" layoutX="450.0" layoutY="875.0" maxHeight="65.0" maxWidth="100.0" minHeight="65.0" minWidth="100.0" mnemonicParsing="false" onAction="#setForwardButton" prefHeight="65.0" prefWidth="100.0" styleClass="arrowButtons" text="&gt;" textAlignment="CENTER" AnchorPane.leftAnchor="450.0" AnchorPane.topAnchor="875.0">
          <font>
             <Font size="30.0" />
          </font>
       </Button>
-      <Button fx:id="toEndButton" layoutX="550.0" layoutY="875.0" mnemonicParsing="false" onAction="#setToEndButton" prefHeight="65.0" prefWidth="100.0" text="»" textAlignment="CENTER" AnchorPane.leftAnchor="550.0" AnchorPane.topAnchor="875.0">
+      <Button fx:id="toEndButton" layoutX="550.0" layoutY="875.0" maxHeight="65.0" maxWidth="100.0" minHeight="65.0" minWidth="100.0" mnemonicParsing="false" onAction="#setToEndButton" prefHeight="65.0" prefWidth="100.0" styleClass="arrowButtons" text="»" textAlignment="CENTER" AnchorPane.leftAnchor="550.0" AnchorPane.topAnchor="875.0">
          <font>
             <Font name="Comic Sans MS" size="30.0" />
          </font>
       </Button>
-      <Button fx:id="backwardButton" layoutX="350.0" layoutY="875.0" mnemonicParsing="false" onAction="#setBackwardButton" prefHeight="64.0" prefWidth="100.0" text="&lt;" textAlignment="CENTER" AnchorPane.leftAnchor="350.0" AnchorPane.topAnchor="875.0">
+      <Button fx:id="backwardButton" layoutX="350.0" layoutY="875.0" maxHeight="65.0" maxWidth="100.0" minHeight="65.0" minWidth="100.0" mnemonicParsing="false" onAction="#setBackwardButton" prefHeight="65.0" prefWidth="100.0" styleClass="arrowButtons" text="&lt;" textAlignment="CENTER" AnchorPane.leftAnchor="350.0" AnchorPane.topAnchor="875.0">
          <font>
             <Font size="30.0" />
          </font>
       </Button>
-      <Button fx:id="toStartButton" layoutX="250.0" layoutY="875.0" maxHeight="65.0" maxWidth="100.0" minHeight="64.0" minWidth="100.0" mnemonicParsing="false" onAction="#setToStartButton" prefHeight="65.0" prefWidth="100.0" text="«" textAlignment="CENTER" AnchorPane.leftAnchor="250.0" AnchorPane.topAnchor="875.0">
+      <Button fx:id="toStartButton" layoutX="250.0" layoutY="875.0" maxHeight="65.0" maxWidth="100.0" minHeight="65.0" minWidth="100.0" mnemonicParsing="false" onAction="#setToStartButton" prefHeight="65.0" prefWidth="100.0" styleClass="arrowButtons" text="«" textAlignment="CENTER" AnchorPane.leftAnchor="250.0" AnchorPane.topAnchor="875.0">
          <font>
             <Font name="Comic Sans MS" size="30.0" />
          </font>
       </Button>
-      <Button layoutX="900.0" layoutY="750.0" mnemonicParsing="false" onAction="#saveLine" prefHeight="100.0" prefWidth="165.0" style="-fx-background-color: lightgreen;" text="Save" textAlignment="CENTER" AnchorPane.leftAnchor="900.0" AnchorPane.topAnchor="750.0">
+      <Button layoutX="900.0" layoutY="750.0" mnemonicParsing="false" onAction="#saveLine" prefHeight="100.0" prefWidth="165.0" styleClass="gameButtons" text="Save" textAlignment="CENTER" AnchorPane.leftAnchor="900.0" AnchorPane.topAnchor="750.0">
          <font>
             <Font size="30.0" />
          </font>
       </Button>
-      <ListView fx:id="openingsView" layoutX="924.0" layoutY="328.0" prefHeight="288.0" prefWidth="282.0" AnchorPane.leftAnchor="924.0" AnchorPane.topAnchor="328.0" />
+      <ListView fx:id="openingsView" layoutX="924.0" layoutY="321.0" prefHeight="258.0" prefWidth="282.0" AnchorPane.leftAnchor="924.0" AnchorPane.topAnchor="321.0" />
       <ListView fx:id="movesView" layoutX="924.0" layoutY="50.0" prefHeight="258.0" prefWidth="282.0" />
-      <Button layoutX="900.0" layoutY="645.0" mnemonicParsing="false" onAction="#switchToOpeningScene" prefHeight="86.0" prefWidth="165.0" text="Opening" />
-      <Button layoutX="1120.0" layoutY="750.0" mnemonicParsing="false" onAction="#removeLine" prefHeight="100.0" prefWidth="124.0" text="remove" />
+      <Button layoutX="900.0" layoutY="631.0" mnemonicParsing="false" onAction="#switchToOpeningScene" prefHeight="100.0" prefWidth="165.0" styleClass="gameButtons" text="Opening" />
+      <Button layoutX="1079.0" layoutY="750.0" mnemonicParsing="false" onAction="#removeLine" prefHeight="100.0" prefWidth="165.0" styleClass="gameButtons" text="Remove" />
+      <Button layoutX="1079.0" layoutY="631.0" mnemonicParsing="false" prefHeight="100.0" prefWidth="165.0" styleClass="gameButtons" text="Train" />
+      <Button layoutX="50.0" layoutY="890.0" maxHeight="50.0" maxWidth="50.0" minHeight="50.0" minWidth="50.0" mnemonicParsing="false" onAction="#rotateBoard" prefHeight="50.0" prefWidth="50.0" styleClass="smallButton" text="↻" textOverrun="CLIP" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="890.0">
+         <font>
+            <Font name="Comic Sans MS" size="22.0" />
+         </font>
+      </Button>
     </children>
 </AnchorPane>

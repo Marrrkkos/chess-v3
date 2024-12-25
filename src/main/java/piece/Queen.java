@@ -6,6 +6,7 @@ import javafx.scene.image.ImageView;
 import player.Turn;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class  Queen extends Piece {
     boolean colour;
@@ -13,9 +14,8 @@ public class  Queen extends Piece {
         this.colour = colour;
     }
 
-    //TODO
-    Image WQueen = new Image(getClass().getResourceAsStream("/pieces/w-queen.png"));
-    Image BQueen = new Image(getClass().getResourceAsStream("/pieces/b-queen.png"));
+    Image WQueen = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-queen.png")));
+    Image BQueen = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/b-queen.png")));
     public Image getImage(){
         if (this.colour) {
             return WQueen;

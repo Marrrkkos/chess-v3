@@ -6,14 +6,15 @@ import javafx.scene.image.ImageView;
 import player.Turn;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Knight extends Piece{
     boolean colour;
     public Knight(boolean colour){
+
         this.colour = colour;
     }
 
-    //TODO
     public String draw(){
         if(colour) {
             return "WKnight";
@@ -21,8 +22,8 @@ public class Knight extends Piece{
             return "BKnight";
         }
     }
-    Image WKnight = new Image(getClass().getResourceAsStream("/pieces/w-knight.png"));
-    Image BKnight = new Image(getClass().getResourceAsStream("/pieces/b-knight.png"));
+    Image WKnight = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-knight.png")));
+    Image BKnight = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/b-knight.png")));
     public Image getImage(){
         if (this.colour) {
             return WKnight;

@@ -8,6 +8,10 @@ import player.Turn;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Objects;
+
+import static javafx.scene.transform.Transform.scale;
+
 
 public class  Bishop extends Piece {
     boolean colour;
@@ -17,8 +21,8 @@ public class  Bishop extends Piece {
     }
 
 
-    Image WBishop = new Image(getClass().getResourceAsStream("/pieces/w-bishop.png"));
-    Image BBishop = new Image(getClass().getResourceAsStream("/pieces/b-bishop.png"));
+    Image WBishop = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-bishop.png")));
+    Image BBishop = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/b-bishop.png")));
     public Image getImage(){
         if (this.colour) {
             return WBishop;

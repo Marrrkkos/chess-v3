@@ -1,13 +1,62 @@
-.root{
+.root {
     -fx-background-color: "#212121";
 }
-.white {
+
+/* Stil für die beiden ListViews */
+.list-view {
     -fx-background-color: beige;
-    -fx-border-width: 10px;
+    -fx-border-color: #6e2c2c;
+    -fx-border-width: 2px;
+    -fx-border-radius: 5px;
+    -fx-padding: 5px;
+}
+.arrowButtons{
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
+/* Stil für die Buttons */
+.gameButtons {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
 }
 
-/* Farben für dunkle Felder */
+/* Hover-Effekt für die Buttons */
+.arrowButtons:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+    -fx-background-color: #854141; /* Etwas helleres Braun für Hover */
+}
+.gameButtons:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+    -fx-background-color: #854141; /* Etwas helleres Braun für Hover */
+}
+
+/* Kleiner Button unten links */
+.smallButton {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-border-radius: 3px;
+    -fx-border-color: beige;
+    -fx-border-width: 1.5px;
+}
+
+/* Hover-Effekt für den kleinen Button */
+.smallButton:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 8, 0.5, 0, 0);
+    -fx-background-color: #854141; /* Etwas helleres Braun für Hover */
+}
+/* White Block */
+.white {
+    -fx-background-color: beige;
+}
+
+/* Black Block */
 .black {
-    -fx-background-color: brown;
-    -fx-border-width: 10px;
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
 }
