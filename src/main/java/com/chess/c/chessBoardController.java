@@ -12,6 +12,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 
 import javafx.scene.paint.Color;
@@ -99,7 +101,7 @@ public class chessBoardController implements Serializable {
             Zuege.add(a);
             count=0;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1, player.Colour);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
@@ -117,7 +119,7 @@ public class chessBoardController implements Serializable {
             count=0;
             player.Colour = true;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1, player.Colour);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour, Zuege, count);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
@@ -147,7 +149,7 @@ public class chessBoardController implements Serializable {
         for (Turn turn : ZuegeSpeicher) {
             manageMoveView(turn.a1, turn.b1);
             Zuege.add(turn);
-            board.doSimpleMove(turn.a1, turn.b1, player.Colour);
+            board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count);
             player.Colour = !player.Colour;
             count++;
         }
@@ -179,7 +181,7 @@ public class chessBoardController implements Serializable {
             count=0;
             player.Colour = true;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1, player.Colour);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
@@ -477,6 +479,7 @@ public class chessBoardController implements Serializable {
     private void resetMoveView(){
         movesView.getItems().clear();
     }
+
     @FXML
     public void initialize() {
 
@@ -495,25 +498,34 @@ public class chessBoardController implements Serializable {
                 // Button im Array speichern
                 buttonArray[row][col] = button;
             }
+
         }
         drawPieces();
     }
-    private void drawPieces(){
+    DraggableMaker draggableMaker = new DraggableMaker();
+    private void drawPieces() {
         Field[][] field = board.getBoard();
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if(field[i][j].piece != null){
+                if (field[i][j].piece != null) {
                     ImageView ik = new ImageView(field[i][j].piece.getImage());
                     ik.setFitHeight(100);
                     ik.setFitWidth(100);
                     buttonArray[i][j].setGraphic(ik);
                     buttonArray[i][j].getGraphic().setRotate(rotation);
-                }else{
+
+                    // Make the piece draggable
+                    draggableMaker.makeDraggable(ik);
+
+                    // Add drag-and-drop event listeners
+                } else {
                     buttonArray[i][j].setGraphic(null);
                 }
             }
         }
     }
+
+
     private Circle drawPoint(double i, double j){
         Circle circle = new Circle();
         circle.setCenterX(j*100+50);
@@ -535,6 +547,9 @@ public class chessBoardController implements Serializable {
                 }
             }
         }
+    }
+    public Field[][] getBoard(){
+        return board.getBoard();
     }
 
 }

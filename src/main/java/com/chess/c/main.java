@@ -18,15 +18,16 @@ public class main extends Application {
         stage.show();
     }
     //TODO
-    //  Fix Casteling
-    //  SimpleMove CastlingEnPasant
-    //  Same opening Names
+    //  Fix Casteling + Enpasant check  <-
+    //  SimpleMove Castling + EnPasant  <-
+    //  Same opening Names  <-
     //  TrainingsModus
-    //  Drag N Drop
+    //  Drag N Drop  <-
     //  Improve Remove-Line
+    //
     //  HotKeys
-    //  Notation
-    //  BrettNotation
+    //  Notation  <-
+    //  BrettNotation  <-
     //  ListView interaction
     public static void main(String[] args) {
         launch();

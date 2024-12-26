@@ -30,9 +30,12 @@ public class Board{
         }
         initializePieces();
     }
-    public void doSimpleMove(String a, String b, boolean colour){
+    public void doSimpleMove(String a, String b, boolean colour, ArrayList<Turn> Zuege, int zuegePos){
         int[] pos1 = NameToCoordinate(a);
         int[] pos2 = NameToCoordinate(b);
+
+        Piece piece = Brett[pos1[0]][pos1[1]].piece.getPiece();
+
         if(b.contains("=")){
             String c = b.substring(0,2);
             int[] pos3 = NameToCoordinate(c);
@@ -59,7 +62,87 @@ public class Board{
                 Brett[pos1[0]][pos1[1]].piece = null;
             }
 
-        }else{
+        }
+        if(piece.getID() == 1 && (pos1[0] == 3 || pos1[0] == 4)){
+            int x1 = pos1[0];       // First Coordinate
+            int y1 = pos1[1];
+
+            int x2 = pos2[0];       // First Coordinate
+            int y2 = pos2[1];
+
+
+
+            String t = Zuege.get(Zuege.get(zuegePos).getID()).a1;
+            String s = Zuege.get(Zuege.get(zuegePos).getID()).b1;
+
+            int[] arr = NameToCoordinate(t);
+            int[] arr1 = NameToCoordinate(s);
+
+            int r1 = arr[0];
+            int s1 = arr[1];
+
+            int r2 = arr1[0];
+            int s2 = arr[1];
+
+
+            if(piece.getColour()) {
+                if(y1 == 0) {
+                    if (((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1 + 1][x1-1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 - 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }else if(y1 == 7){
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1 - 1][x1 - 1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 - 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }
+                }else {
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1-1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 - 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }else if((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 + 1].name.equals(Brett[r1][s1].name)) && Brett[y1+1][x1-1].name.equals(Brett[y2][x2].name)){
+                        Brett[x1 - 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }
+            }else{
+                if(y1 == 0) {
+                    if (((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1+1][x1+1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 + 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }else if(y1 == 7){
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1 + 1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 + 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }
+                }else {
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1 + 1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 + 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }else if(((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1+1][x1 + 1].name.equals(Brett[y2][x2].name)){
+                        Brett[x1 + 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }
+            }
+        }
+        if ((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) {
+            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+            Brett[pos1[0]][pos1[1]].piece = null;
+
+            Brett[pos1[0]][pos1[1] + 1].piece = Brett[pos1[0]][pos1[1] + 3].piece;
+            Brett[pos1[0]][pos1[1] + 3].piece = null;
+
+            //Long Castle
+        } else if ((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) {
+            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+            Brett[pos1[0]][pos1[1]].piece = null;
+
+            Brett[pos1[0]][pos1[1] - 1].piece = Brett[pos1[0]][pos1[1] - 4].piece;
+            Brett[pos1[0]][pos1[1] - 4].piece = null;
+
+        } else {
             Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
             Brett[pos1[0]][pos1[1]].piece = null;
         }
@@ -317,12 +400,16 @@ public class Board{
             clearPossible(Brett);
 
 
-            Field[][] field = piece.possibleFields(pos1, Brett, Zuege); // <----
+            Field[][] field = piece.possibleFields(pos1, Brett, Zuege);
 
+            if(piece.getID() == 6 && !piece.hasMoved()){
+
+            }
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
 
                     if(field[i][j].isPossible){
+                        //Hier doSimpleMove
                         BrettCopy[i][j].piece = BrettCopy[pos1[0]][pos1[1]].piece;
                         BrettCopy[pos1[0]][pos1[1]].piece = null;
 
@@ -340,7 +427,7 @@ public class Board{
             return new Board(field);
         }
     }
-    private boolean checkiChecks(ArrayList<Turn> Zuege, Field[][] Brett, boolean pieceColour){     //Überprüft ob jemand im Schach ist
+    public boolean checkiChecks(ArrayList<Turn> Zuege, Field[][] Brett, boolean pieceColour){     //Überprüft ob jemand im Schach ist
         Field[][] WhitePiecesPossible = new Field[8][8];
         Field[][] BlackPiecesPossible = new Field[8][8];
         Field[][] BrettCopy = new Field[8][8];
@@ -351,11 +438,11 @@ public class Board{
 
         int WhiteKingX=9, WhiteKingY=9;
         int BlackKingX=9, BlackKingY=9;
-        //White Pieces
 
         WhitePiecesPossible = allPossibleMoves(true,Brett,Zuege);
         BlackPiecesPossible = allPossibleMoves(false, Brett, Zuege);
 
+        //Find position of Kings
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (BrettCopy[i][j].piece != null) {
