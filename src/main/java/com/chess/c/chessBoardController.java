@@ -11,8 +11,10 @@ import javafx.scene.Scene;
 
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 
@@ -101,13 +103,15 @@ public class chessBoardController implements Serializable {
             Zuege.add(a);
             count=0;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count-1);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
             }
             drawPieces();
+            possibleBoard.clearBoard();
             repaintArrows();
+            removeAllCircles();
         }
     }
     @FXML
@@ -119,12 +123,13 @@ public class chessBoardController implements Serializable {
             count=0;
             player.Colour = true;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1, player.Colour, Zuege, count);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour, Zuege, count-1);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
             }
-
+            removeAllCircles();
+            possibleBoard.clearBoard();
             drawPieces();
             repaintArrows();
         }
@@ -149,7 +154,7 @@ public class chessBoardController implements Serializable {
         for (Turn turn : ZuegeSpeicher) {
             manageMoveView(turn.a1, turn.b1);
             Zuege.add(turn);
-            board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count);
+            board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count-1);
             player.Colour = !player.Colour;
             count++;
         }
@@ -159,7 +164,7 @@ public class chessBoardController implements Serializable {
     @FXML
     public void saveLine(){
 
-        moveTree.add(ZuegeSpeicher);
+        moveTree.add(Zuege);
 
         String dateiName = "Openings/" + chosenOpening;
 
@@ -181,7 +186,7 @@ public class chessBoardController implements Serializable {
             count=0;
             player.Colour = true;
             for (Turn turn : Zuege) {
-                board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count);
+                board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count-1);
                 manageMoveView(turn.a1, turn.b1);
                 count++;
                 player.Colour = !player.Colour;
@@ -238,7 +243,320 @@ public class chessBoardController implements Serializable {
         }
     }
     @FXML
+    public void initialize() {
+
+        board.initializeBoard();
+        ImageView dragImageView = new ImageView(); // Zum Anzeigen des Schachstücks beim Draggen
+        dragImageView.setVisible(false);          // Standardmäßig unsichtbar
+        dragImageView.setManaged(false);
+        gridPane.getChildren().add(dragImageView);
+
+        for (Node node : gridPane.getChildren()) {
+            if (node instanceof Button) {
+                Button button = (Button) node;
+                Integer row = GridPane.getRowIndex(button);
+                Integer col = GridPane.getColumnIndex(button);
+
+                // Null-Sicher: Standardwert 0, wenn Row/Col null ist
+                row = (row == null) ? 0 : row;
+                col = (col == null) ? 0 : col;
+
+                // Button im Array speichern
+                buttonArray[row][col] = button;
+
+                buttonArray[row][col].setOnMousePressed(mouseEvent -> {
+                    if(promotion){
+                        int a = doPromotion(button);
+                        nextTurn(a);
+                        m1 = "";
+                        m2 = "";
+                        promotion = false;
+                    }else {
+                        if (!m1.isEmpty()) {
+                            double mouseX = mouseEvent.getSceneX();
+                            double mouseY = mouseEvent.getSceneY();
+                            int xPos, yPos;
+                            if (rotation == 0) {
+                                xPos = (int) ((mouseX - 50) / 100);
+                                yPos = (int) ((mouseY - 50) / 100);
+                            } else {
+                                xPos = 7 - (int) ((mouseX - 50) / 100);
+                                yPos = 7 - (int) ((mouseY - 50) / 100);
+                            }
+                            m2 = buttonArray[yPos][xPos].getId();
+                            //Selbe Farbe → Neue Figur ausgewählt
+                            if (board.hasPiece(m2) && board.getPieceColour(m1) == board.getPieceColour(m2)) {
+                                removeAllCircles();
+                                m1 = button.getId();
+                                if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
+
+                                    long startTime = System.nanoTime();
+                                    possibleBoard = board.getPossible(m1, Zuege);
+                                    long endTime = System.nanoTime();
+                                    System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
+
+                                    if (possibleBoard.Possibles()) {
+                                        drawWPossible();
+
+                                        Node graphic = button.getGraphic();
+                                        if (graphic instanceof ImageView) {
+                                            ImageView imageView = (ImageView) graphic;
+
+                                            dragImageView.setImage(imageView.getImage());
+                                            dragImageView.setFitWidth(imageView.getFitWidth());
+                                            dragImageView.setFitHeight(imageView.getFitHeight());
+                                            dragImageView.setVisible(true);
+
+                                            if (rotation == 180) {
+                                                dragImageView.setRotate(180);
+                                                dragImageView.setLayoutX(gridPane.getWidth() - mouseEvent.getSceneX());
+                                                dragImageView.setLayoutY(gridPane.getHeight() - mouseEvent.getSceneY());
+                                            } else {
+                                                dragImageView.setRotate(0);
+                                                dragImageView.setLayoutX(mouseEvent.getSceneX() - gridPane.getWidth() / 8);
+                                                dragImageView.setLayoutY(mouseEvent.getSceneY() - gridPane.getHeight() / 8);
+                                            }
+
+                                            button.setGraphic(null);
+                                        }
+                                    } else {
+                                        m1 = "";
+                                    }
+                                } else {
+                                    m1 = "";
+                                }
+                            } else {
+
+                                boolean x;
+                                if (board.checkPromotion(m1, m2)) {
+                                    showPromotion();
+                                    dragImageView.setVisible(false);
+                                    removeAllCircles();
+                                } else {
+
+                                        x = board.doMove(m1, m2, Zuege);
+                                        if (x) {
+
+                                            nextTurn(0);
+                                            dragImageView.setVisible(false);
+
+                                        } else {
+                                            dragImageView.setVisible(false);
+                                        }
+                                        m1 = "";
+                                        m2 = "";
+
+                                }
+                                possibleBoard.clearBoard();
+                                removeAllCircles();
+
+                            }
+                        } else {
+                            m1 = button.getId();
+
+                            if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
+
+                                long startTime = System.nanoTime();
+                                possibleBoard = board.getPossible(m1, Zuege);
+                                long endTime = System.nanoTime();
+                                System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
+
+                                if (possibleBoard.Possibles()) {
+                                    drawWPossible();
+
+                                    // Drag-Bild initialisieren
+                                    Node graphic = button.getGraphic();
+                                    if (graphic instanceof ImageView) {
+                                        ImageView imageView = (ImageView) graphic;
+
+                                        dragImageView.setImage(imageView.getImage());
+                                        dragImageView.setFitWidth(imageView.getFitWidth());
+                                        dragImageView.setFitHeight(imageView.getFitHeight());
+                                        dragImageView.setVisible(true); // Drag-Bild anzeigen
+                                        if (rotation == 180) {
+                                            dragImageView.setRotate(180);
+                                            dragImageView.setLayoutX(gridPane.getWidth() - mouseEvent.getSceneX());
+                                            dragImageView.setLayoutY(gridPane.getHeight() - mouseEvent.getSceneY());
+                                        } else {
+                                            dragImageView.setRotate(0);
+                                            dragImageView.setLayoutX(mouseEvent.getSceneX() - gridPane.getWidth() / 8);
+                                            dragImageView.setLayoutY(mouseEvent.getSceneY() - gridPane.getHeight() / 8);
+                                        }
+                                        button.setGraphic(null);
+                                    }
+                                } else {
+                                    m1 = "";
+                                }
+                            } else {
+                                m1 = "";
+                            }
+                        }
+                    }
+                });
+                //-----------------------------------------------------------------------------------------------------------------
+                //-----------------------------------------------------------------------------------------------------------------
+                //-----------------------------------------------------------------------------------------------------------------
+                buttonArray[row][col].setOnMouseDragged(mouseEvent -> {
+
+                    if (rotation == 180) {
+                        dragImageView.setLayoutX(gridPane.getWidth() - mouseEvent.getSceneX());
+                        dragImageView.setLayoutY(gridPane.getHeight() - mouseEvent.getSceneY());
+                    } else {
+                        dragImageView.setLayoutX(mouseEvent.getSceneX() - gridPane.getWidth() / 8);
+                        dragImageView.setLayoutY(mouseEvent.getSceneY() - gridPane.getHeight() / 8);
+                    }
+                });
+                //-----------------------------------------------------------------------------------------------------------------
+                //-----------------------------------------------------------------------------------------------------------------
+                //-----------------------------------------------------------------------------------------------------------------
+                buttonArray[row][col].setOnMouseReleased(mouseEvent -> {
+                    if(!promotion) {
+                        double mouseX = mouseEvent.getSceneX();
+                        double mouseY = mouseEvent.getSceneY();
+                        int xPos, yPos;
+                        if (rotation == 0) {
+                            xPos = (int) ((mouseX - 50) / 100);
+                            yPos = (int) ((mouseY - 50) / 100);
+                        } else {
+                            xPos = 7 - (int) ((mouseX - 50) / 100);
+                            yPos = 7 - (int) ((mouseY - 50) / 100);
+                        }
+                        m2 = buttonArray[yPos][xPos].getId();
+
+
+                        if (m1.equals(m2)) {
+                            m2 = "";
+                            dragImageView.setVisible(false);
+                            ImageView currentPieceView = new ImageView(dragImageView.getImage());
+                            if (rotation == 180) {
+                                currentPieceView.setRotate(180);
+                            } else {
+                                currentPieceView.setRotate(0);
+                            }
+
+                            button.setGraphic(currentPieceView);
+
+
+                        }else if (board.checkPromotion(m1, m2)) {
+                            showPromotion();
+                            dragImageView.setVisible(false);
+                            removeAllCircles();
+                        } else if (board.doMove(m1, m2, Zuege)) {
+                            nextTurn(0);
+                            dragImageView.setVisible(false);
+                            m1 = "";
+                            m2 = "";
+                            removeAllCircles();
+                        } else {
+                            if (button.getGraphic() == null && !m1.isEmpty()) {
+                                ImageView currentPieceView = new ImageView(dragImageView.getImage());
+                                if (rotation == 180) {
+                                    currentPieceView.setRotate(180);
+                                } else {
+                                    currentPieceView.setRotate(0);
+                                }
+
+                                button.setGraphic(currentPieceView);
+                                dragImageView.setVisible(false);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        drawPieces();
+    }
+/*
+ double mouseX = mouseEvent.getSceneX();
+                    double mouseY = mouseEvent.getSceneY();
+                    int xPos = (int) ((mouseX - 50) / 100);
+                    int yPos = (int) ((mouseY - 50) / 100);
+                    m2 = buttonArray[yPos][xPos].getId();
+
+
+                    if (m1.equals(m2)) {
+                        System.out.println("1");
+                        m2 = "";
+                        dragImageView.setVisible(false);
+                        button.setGraphic(new ImageView(dragImageView.getImage()));
+                    } else {
+                        System.out.println("2");
+                        if (board.hasPiece(m2) && board.getPieceColour(m1) == board.getPieceColour(m2)) {
+                            System.out.println("3");
+                            m2 = "";
+                            dragImageView.setVisible(false);
+                            System.out.println(button.getId());
+                            button.setGraphic(new ImageView(dragImageView.getImage()));
+                            removeAllCircles();
+
+                            m1 = button.getId();
+                            if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
+                                System.out.println("4");
+                                long startTime = System.nanoTime();
+                                possibleBoard = board.getPossible(m1, Zuege);
+                                long endTime = System.nanoTime();
+                                System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
+
+                                if (possibleBoard.Possibles()) {
+                                    System.out.println("5");
+                                    drawWPossible();
+
+                                    // Drag-Bild initialisieren
+                                    Node graphic = button.getGraphic();
+                                    if (graphic instanceof ImageView) {
+                                        System.out.println("6");
+                                        ImageView imageView = (ImageView) graphic;
+
+                                        dragImageView.setImage(imageView.getImage());
+                                        dragImageView.setFitWidth(imageView.getFitWidth());
+                                        dragImageView.setFitHeight(imageView.getFitHeight());
+                                        dragImageView.setVisible(true); // Drag-Bild anzeigen
+                                        dragImageView.setLayoutX(mouseEvent.getSceneX() - dragImageView.getFitWidth());
+                                        dragImageView.setLayoutY(mouseEvent.getSceneY() - dragImageView.getFitHeight());
+                                        button.setGraphic(null); // Verstecke ursprüngliches Bild
+                                    }
+                                } else {
+                                    m1 = "";
+                                }
+                            } else {
+                                m1 = "";
+                            }
+
+
+                        } else {
+                            System.out.println("7");
+                            boolean x;
+                            if (board.checkPromotion(m1, m2)) {
+                                System.out.println("8");
+                                showPromotion();
+                            } else {
+                                System.out.println("9");
+                                x = board.doMove(m1, m2, Zuege);
+                                if (x) {
+                                    System.out.println("10");
+                                    nextTurn(0);
+                                    System.out.println(Zuege);
+                                    dragImageView.setVisible(false);
+                                }else{
+                                    System.out.println("11");
+                                    button.setGraphic(new ImageView(dragImageView.getImage()));
+                                    dragImageView.setVisible(false);
+                                }
+                                m1 = "";
+                                m2 = "";
+                            }
+                            possibleBoard.clearBoard();
+                            removeAllCircles();
+                        }
+                    }
+                    System.out.println(m1);
+                    System.out.println(m2);*/
+    private void manF(ImageView dragImageView, Button button, MouseEvent mouseEvent){
+
+    }
+    @FXML
     public void boardView(ActionEvent event){
+/*
         if(promotion){
             int a = doPromotion(event);
             nextTurn(a);
@@ -248,6 +566,7 @@ public class chessBoardController implements Serializable {
         }
         if (m1.isEmpty()) {
             manageFirstClick(event);
+
         } else {
             m2 = ((Button) event.getSource()).getId();
 
@@ -272,10 +591,9 @@ public class chessBoardController implements Serializable {
                 possibleBoard.clearBoard();
                 removeAllCircles();
             }
-        }
+        }*/
     }
-    private void manageFirstClick(ActionEvent event){
-        m1 = ((Button) event.getSource()).getId();
+    private void manageFirstClick(){
 
         if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
             long startTime = System.nanoTime();
@@ -293,18 +611,23 @@ public class chessBoardController implements Serializable {
             m1 = "";
         }
     }
-    private int doPromotion(ActionEvent event){
+
+    //ImageView currentPieceView = (ImageView)((Button) event.getSource()).getGraphic();
+    //currentPieceView.setMouseTransparent(false);
+    //gridPane.getChildren().add(currentPieceView);
+    //draggableMaker.makeDraggable(currentPieceView);
+    private int doPromotion(Button button){
         int x = 0;
-        if(Objects.equals(((Button) event.getSource()).getId(), "c5")){
+        if(Objects.equals(button.getId(), "c5")){
             x = 1;
         }
-        if(Objects.equals(((Button) event.getSource()).getId(), "d5")){
+        if(Objects.equals(button.getId(), "d5")){
             x = 2;
         }
-        if(Objects.equals(((Button) event.getSource()).getId(), "e5")){
+        if(Objects.equals(button.getId(), "e5")){
             x = 4;
         }
-        if(Objects.equals(((Button) event.getSource()).getId(), "f5")){
+        if(Objects.equals(button.getId(), "f5")){
             x = 3;
         }
         board.promotion(x,m1,m2);
@@ -351,8 +674,6 @@ public class chessBoardController implements Serializable {
         promotion = true;
     }
     private void nextTurn(int p){
-        drawPieces();
-
 
         if(promotion){
             Zuege.add(count, new Turn(count, (count + 2) / 2, m1, (m2 + "" + writePromotion(p))));
@@ -376,6 +697,7 @@ public class chessBoardController implements Serializable {
             }
         }
         long endTime = System.nanoTime();
+        drawPieces();
         System.out.println("checkCheckmate Execution time:  " + (endTime - startTime) + " ns");
     }
     private String writePromotion(int p){
@@ -480,29 +802,7 @@ public class chessBoardController implements Serializable {
         movesView.getItems().clear();
     }
 
-    @FXML
-    public void initialize() {
 
-
-        board.initializeBoard();
-        for (Node node : gridPane.getChildren()) {
-            if (node instanceof Button) {
-                Button button = (Button) node;
-                Integer row = GridPane.getRowIndex(button);
-                Integer col = GridPane.getColumnIndex(button);
-
-                // Null-Sicher: Standardwert 0, wenn Row/Col null ist
-                row = (row == null) ? 0 : row;
-                col = (col == null) ? 0 : col;
-
-                // Button im Array speichern
-                buttonArray[row][col] = button;
-            }
-
-        }
-        drawPieces();
-    }
-    DraggableMaker draggableMaker = new DraggableMaker();
     private void drawPieces() {
         Field[][] field = board.getBoard();
         for (int i = 0; i < 8; i++) {
@@ -511,11 +811,15 @@ public class chessBoardController implements Serializable {
                     ImageView ik = new ImageView(field[i][j].piece.getImage());
                     ik.setFitHeight(100);
                     ik.setFitWidth(100);
+
                     buttonArray[i][j].setGraphic(ik);
                     buttonArray[i][j].getGraphic().setRotate(rotation);
-
+                    //ik.setX(j*100);
+                    //ik.setY(i*100);
+                    //ik.setManaged(false);
+                    //gridPane.getChildren().add(ik);
                     // Make the piece draggable
-                    draggableMaker.makeDraggable(ik);
+                    //draggableMaker.makeDraggable(ik);
 
                     // Add drag-and-drop event listeners
                 } else {

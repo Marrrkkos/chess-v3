@@ -45,17 +45,27 @@ public class ChooseOpeningController {
 
     @FXML
     public void addOpening() throws FileNotFoundException {
+        File dateiName = new File("Openings/");
+        boolean sameName = false;
+        String[] dateinamen = dateiName.list();
+        assert dateinamen != null;
+        for (String dateiname : dateinamen) {
+            if(nameField.getCharacters().toString().equals(dateiname)){
+                sameName = true;
+            }
+        }
+        if(!nameField.getCharacters().toString().isEmpty() && !sameName) {
+            openingList.getItems().add(nameField.getCharacters().toString());
+            new FileOutputStream("Openings/" + nameField.getCharacters().toString());
 
-        openingList.getItems().add(nameField.getCharacters().toString());
-        new FileOutputStream("Openings/" + nameField.getCharacters().toString());
+            nameField.setVisible(false);
+            openingList.setOpacity(1);
 
-        nameField.setVisible(false);
-        openingList.setOpacity(1);
-
-        openingList.setFocusTraversable(true);
-        addButton.setVisible(true);
-        deleteButton.setVisible(true);
-        addOpeningButton.setVisible(false);
+            openingList.setFocusTraversable(true);
+            addButton.setVisible(true);
+            deleteButton.setVisible(true);
+            addOpeningButton.setVisible(false);
+        }
     }
     private Stage stage;
     private Scene scene;
