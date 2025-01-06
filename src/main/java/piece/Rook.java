@@ -26,7 +26,8 @@ public class Rook extends Piece {
         }
 
     }
-    public String draw() {
+    @Override
+    public String toString() {
         if (colour) {
             return " WRook ";
         } else {

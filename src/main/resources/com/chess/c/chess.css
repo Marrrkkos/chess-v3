@@ -36,6 +36,27 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
     -fx-background-color: #854141; /* Etwas helleres Braun für Hover */
 }
+.gameToggleButtons {
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
+
+.gameToggleButtons:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.5), 10, 0.5, 0, 0);
+    -fx-background-color: #854141; /* Etwas helleres Braun für Hover */
+}
+
+/* Stil für den ausgewählten Zustand */
+.gameToggleButtons:selected {
+    -fx-background-color: #854141; /* Etwas helleres Braun für den ausgewählten Zustand */
+    -fx-border-color: gold; /* Goldener Rahmen */
+    -fx-border-width: 3px; /* Etwas dickerer Rahmen */
+    -fx-effect: dropshadow(gaussian, rgba(255, 223, 0, 0.5), 15, 0.5, 0, 0); /* Goldener Glow */
+}
 
 /* Kleiner Button unten links */
 .smallButton {
@@ -55,7 +76,6 @@
 .white {
     -fx-background-color: beige;
 }
-
 /* Black Block */
 .black {
     -fx-background-color: #6e2c2c; /* Dunkles Braun */

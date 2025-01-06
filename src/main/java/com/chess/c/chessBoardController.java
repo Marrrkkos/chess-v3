@@ -2,45 +2,47 @@ package com.chess.c;
 
 import board.Board;
 import board.Field;
+import board.NotationHandler;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.image.Image;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.effect.BlendMode;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.TransferMode;
-import javafx.scene.layout.GridPane;
-
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
+import javafx.scene.shape.*;
 import javafx.stage.Stage;
-import piece.Bishop;
-import piece.Knight;
-import piece.Queen;
-import piece.Rook;
+import javafx.util.Duration;
+import piece.*;
+import player.Knoten;
 import player.Player;
 import player.Turn;
 import player.moveTree;
-
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class chessBoardController implements Serializable {
 
-    moveTree moveTree = new moveTree(new Turn(false));
+    moveTree moveTree = new moveTree(new Turn(true));
 
     final int FIELDSIZE = 100;
-
+    @FXML
+    AnchorPane anchorPane;
+    @FXML
+    private GridPane gridPane;
     @FXML
     ListView<String> movesView;
     @FXML
@@ -53,6 +55,14 @@ public class chessBoardController implements Serializable {
     Button toStartButton;
     @FXML
     Button toEndButton;
+    @FXML
+    ToggleButton trainingsButton;
+    @FXML
+    ToggleButton removeButton;
+    @FXML
+            Button saveButton;
+    @FXML
+            Button rotateButton;
 
     ArrayList<Turn> Zuege = new ArrayList<>();
     ArrayList<Turn> ZuegeSpeicher = new ArrayList<>();
@@ -71,9 +81,6 @@ public class chessBoardController implements Serializable {
     Boolean promotion = false;
 
     String chosenOpening = "";
-
-    @FXML
-    private GridPane gridPane;
     private Button[][] buttonArray = new Button[8][8];
 
 
@@ -95,7 +102,7 @@ public class chessBoardController implements Serializable {
     }
     @FXML
     public void setForwardButton(){
-        if(ZuegeSpeicher.size()>Zuege.size()) {
+        if((ZuegeSpeicher.size()>Zuege.size())) {
             resetMoveView();
             player.Colour = true;
             board.resetPieces();
@@ -103,15 +110,15 @@ public class chessBoardController implements Serializable {
             Zuege.add(a);
             count=0;
             for (Turn turn : Zuege) {
+                notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
                 board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count-1);
-                manageMoveView(turn.a1, turn.b1);
+                notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
+                manageMoveView(notationHandler.handleNotation());
                 count++;
                 player.Colour = !player.Colour;
             }
             drawPieces();
-            possibleBoard.clearBoard();
             repaintArrows();
-            removeAllCircles();
         }
     }
     @FXML
@@ -122,9 +129,12 @@ public class chessBoardController implements Serializable {
             Zuege.removeLast();
             count=0;
             player.Colour = true;
+
             for (Turn turn : Zuege) {
+                notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
                 board.doSimpleMove(turn.a1, turn.b1, player.Colour, Zuege, count-1);
-                manageMoveView(turn.a1, turn.b1);
+                notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
+                manageMoveView(notationHandler.handleNotation());
                 count++;
                 player.Colour = !player.Colour;
             }
@@ -136,13 +146,7 @@ public class chessBoardController implements Serializable {
     }
     @FXML
     public void setToStartButton(){
-        resetMoveView();
-        board.resetPieces();
-        player.Colour = true;
-        Zuege.clear();
-        drawPieces();
-        count = 0;
-        repaintArrows();
+        restartGame();
     }
     @FXML
     public void setToEndButton(){
@@ -152,9 +156,11 @@ public class chessBoardController implements Serializable {
         count=0;
         player.Colour = true;
         for (Turn turn : ZuegeSpeicher) {
-            manageMoveView(turn.a1, turn.b1);
-            Zuege.add(turn);
+            notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
+            manageMoveView(notationHandler.handleNotation());
             board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count-1);
+            notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
+            Zuege.add(turn);
             player.Colour = !player.Colour;
             count++;
         }
@@ -164,36 +170,222 @@ public class chessBoardController implements Serializable {
     @FXML
     public void saveLine(){
 
-        moveTree.add(Zuege);
+        if(chosenOpening != null){
+            System.out.println("Line safed: " + moveTree.checkForMoreThenOneMove(Zuege, moveTree.getWurzelColour()) + "WurzelColour: " + moveTree.getWurzelColour());
+            if(moveTree.checkForMoreThenOneMove(Zuege, moveTree.getWurzelColour())) {
+                moveTree.add(Zuege);
 
-        String dateiName = "Openings/" + chosenOpening;
+                String dateiName = "Openings/" + chosenOpening;
 
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dateiName))) {
-            oos.writeObject(moveTree);
-            System.out.println("Objekt gespeichert.");
-        } catch (IOException e) {
-            System.out.println("Fehler beim Speichern: " + e.getMessage());
+                try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(dateiName))) {
+                    oos.writeObject(moveTree);
+                    System.out.println("Objekt gespeichert.");
+                } catch (IOException e) {
+                    System.out.println("Fehler beim Speichern: " + e.getMessage());
+                }
+            }
         }
     }
     @FXML
-    public void removeLine(){
+    public void setRemoveButton(){
+        if(removeButton.isSelected()) {
+            Line line = new Line();
+            Polygon polygon = new Polygon();
+            int countID = 0;
+            for (Node node1 : gridPane.getChildren()) {
+
+                if(node1 instanceof Button || node1 instanceof ToggleButton){
+                    node1.setMouseTransparent(true);
+                }
+
+                if (node1 instanceof Line || node1 instanceof Polygon) {
+                    for (Node node : gridPane.getChildren()) {
+                        if (node instanceof Line line1) {
+                            if (Objects.equals(line1.getId(), "" + countID)) {
+                                line = line1;
+                            }
+
+                        }
+                        if (node instanceof Polygon polygon1) {
+                            if (Objects.equals(polygon1.getId(), "" + countID)) {
+                                polygon = polygon1;
+                            }
+                        }
+                    }
+                    line.setMouseTransparent(false);
+                    polygon.setMouseTransparent(false);
+                    Line finalLine = line;
+                    Polygon finalPolygon = polygon;
+
+                    line.setOnMouseEntered(mouseEvent -> {
+                        finalLine.setStroke(Color.RED);
+                        finalPolygon.setFill(Color.RED);
+                        finalLine.setOpacity(1);
+                        finalPolygon.setOpacity(1);
+                    });
+                    line.setOnMouseExited(mouseEvent -> {
+                        finalLine.setStroke(Color.GREEN);
+                        finalPolygon.setFill(Color.GREEN);
+                        finalLine.setOpacity(0.3);
+                        finalPolygon.setOpacity(0.3);
+                    });
+                    line.setOnMouseClicked(mouseEvent -> {
+                        String m1;
+                        String m2;
+                            if(player.Colour) {
+                                System.out.println(finalLine.getStartX() + " " + finalLine.getStartY() + " " + finalLine.getEndX() + " " + finalLine.getEndY());
+                                int startX = (int) finalLine.getStartX() / 100;
+                                int startY = (int) (finalLine.getStartY()) / 100;
+                                m1 = buttonArray[startY][startX].getId();
+                                System.out.println("Start: " + buttonArray[startY][startX].getId());
+                                int endX = (int) finalLine.getEndX() / 100;
+                                int endY = (int) (finalLine.getEndY() - 55) / 100;      //-55 wegen arrowSize
+                                m2 = buttonArray[endY][endX].getId();
+
+                                System.out.println("endX: " + endX + "endY: " + endY);
+                                System.out.println("End: " + buttonArray[endY][endX].getId());
+                            }else {
+                                System.out.println(finalLine.getStartX() + " " + finalLine.getStartY() + " " + finalLine.getEndX() + " " + finalLine.getEndY());
+                                int startX = (int) finalLine.getStartX() / 100;
+                                int startY = (int) (finalLine.getStartY()) / 100;
+                                m1 = buttonArray[startY][startX].getId();
+                                System.out.println("Start: " + buttonArray[startY][startX].getId());
+                                int endX = (int) finalLine.getEndX() / 100;
+                                int endY = (int) (finalLine.getEndY() + 50) / 100;
+                                m2 = buttonArray[endY][endX].getId();
+
+                                System.out.println("endX: " + endX + "endY: " + endY);
+                                System.out.println("End: " + buttonArray[endY][endX].getId());
+
+                            }
+
+
+
+                        areYouSure(m1, m2);
+                    });
+                    polygon.setOnMouseEntered(mouseEvent -> {
+                        finalLine.setStroke(Color.RED);
+                        finalPolygon.setFill(Color.RED);
+                        finalLine.setOpacity(1);
+                        finalPolygon.setOpacity(1);
+                    });
+                    polygon.setOnMouseExited(mouseEvent -> {
+                        finalLine.setStroke(Color.GREEN);
+                        finalPolygon.setFill(Color.GREEN);
+                        finalLine.setOpacity(0.3);
+                        finalPolygon.setOpacity(0.3);
+                    });
+                    polygon.setOnMouseClicked(mouseEvent -> {
+                        int startX = (int) finalLine.getStartX() / 100;
+                        int startY = (int) (finalLine.getStartY()) / 100;
+                        String m1 = buttonArray[startY][startX].getId();
+                        System.out.println("Start: " + buttonArray[startY][startX].getId());
+                        int endX = (int) finalLine.getEndX() / 100;
+                        int endY = (int) (finalLine.getEndY()-100) / 100;
+                        String m2 = buttonArray[endY][endX].getId();
+                        System.out.println("endX: " + endX + "endY: " + endY);
+                        System.out.println("End: " + buttonArray[endY][endX].getId());
+
+                        areYouSure(m1, m2);
+                    });
+                    countID++;
+                }
+            }
+        }else{
+            for(Node node : gridPane.getChildren()){
+                if(node instanceof Button || node instanceof ToggleButton){
+                    node.setMouseTransparent(false);
+                }
+            }
+            repaintArrows();
+        }
+    }
+    public void areYouSure(String move1, String move2){
+        StackPane overlayPane = new StackPane();
+        overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);"); // Transparenter Hintergrund
+
+// Inhalt des Overlay-Panes
+        VBox overlayContent = new VBox(10); // VBox für besseren Abstand
+        overlayContent.setAlignment(Pos.CENTER);
+
+// Label und Buttons
+        Label label = new Label("Sicher?");
+        Button button1 = new Button("Yes");
+        Button button2 = new Button("No");
+        player.moveTree moveTree1 = new moveTree(new Turn(true));
+
+        Zuege.add(count, new Turn(count, (count + 2) / 2, move1, (move2), ""));
+        moveTree1.addKnoten(moveTree.getSubTree(Zuege));
+        List<ArrayList<Knoten>> a = moveTree1.erstellePfade();
+        Zuege.removeLast();
+        label.setText("Are you sure you want to delete " + a.size() + " Lines?");
+        m1= "";
+        m2 = "";
+        button1.setOnMouseClicked(mouseEvent -> {
+            overlayPane.setVisible(false);
+            removeLine(move1, move2);
+
+        });
+        button2.setOnMouseClicked(mouseEvent -> {
+            overlayPane.setVisible(false);
+            repaintArrows();
+            removeButton.setSelected(false);
+        });
+        label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        button1.setPrefWidth(80);
+        button2.setPrefWidth(80);
+
+// Buttons in einer HBox anordnen
+        HBox buttonBox = new HBox(10); // Abstand zwischen den Buttons
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(button1, button2);
+
+// Overlay-Inhalt zusammenstellen
+        overlayContent.getChildren().addAll(label, buttonBox);
+        overlayPane.getChildren().add(overlayContent);
+
+// Größe und Platzierung des Overlay-Panes
+        overlayPane.setPrefSize(300, 200); // Feste Größe für das Overlay
+        overlayPane.setVisible(true);
+
+// Overlay zum AnchorPane hinzufügen
+        anchorPane.getChildren().add(overlayPane);
+        AnchorPane.setTopAnchor(overlayPane, 0.0);
+        AnchorPane.setBottomAnchor(overlayPane, 0.0);
+        AnchorPane.setLeftAnchor(overlayPane, 0.0);
+        AnchorPane.setRightAnchor(overlayPane, 0.0);
+        for(Node node : gridPane.getChildren()){
+            if(node instanceof Button || node instanceof ToggleButton){
+                node.setMouseTransparent(false);
+            }
+        }
+
+    }
+    public void removeLine(String move1, String move2){
+        m1 = move1;
+        m2 = move2;
+        possibleBoard = board.getPossible(m1,Zuege);
+        board.doSimpleMove(m1, m2, player.Colour, Zuege,count-1);
+        nextTurn(0);
         if(!Zuege.isEmpty()) {
-            System.out.println(Zuege);
+
             moveTree.remove(Zuege);
-            System.out.println(Zuege);
             resetMoveView();
             board.resetPieces();
             count=0;
             player.Colour = true;
             for (Turn turn : Zuege) {
+                notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
                 board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count-1);
-                manageMoveView(turn.a1, turn.b1);
+                notationHandler.setCheckiChecks(board.checkiChecks(Zuege, board.getBoard(), player.Colour));
+                manageMoveView(notationHandler.handleNotation());
                 count++;
                 player.Colour = !player.Colour;
             }
 
             drawPieces();
             repaintArrows();
+            removeButton.setSelected(false);
 
             String dateiName = "Openings/" + chosenOpening;
 
@@ -205,8 +397,8 @@ public class chessBoardController implements Serializable {
             }
         }
     }
-    @FXML
-    public void loadLine(){
+
+    public void loadTree(){
         String dateiName = "Openings/" + chosenOpening;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dateiName))) {
             moveTree = (moveTree) ois.readObject();
@@ -214,19 +406,23 @@ public class chessBoardController implements Serializable {
             System.out.println("Objekt geladen: " + moveTree);
             ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
             drawAllArrows(nextMoves);
+
+
             for(Turn turn: nextMoves) {
-                openingsView.getItems().add(turn.a1 + " " + turn.b1);
+                notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
+                openingsView.getItems().add(notationHandler.handleNotation());
             }
 
+            if(!moveTree.getWurzelColour()){
+                rotateBoard();
+            }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("Fehler beim Laden: " + e.getMessage());
         }
 
     }
-    @FXML
-    public void training(){
 
-    }
+
     int rotation = 0;
     @FXML
     public void rotateBoard(){
@@ -242,6 +438,9 @@ public class chessBoardController implements Serializable {
             }
         }
     }
+    int promoteXPos = 0;
+    int promoteYPos = 0;
+    Button previousButton;
     @FXML
     public void initialize() {
 
@@ -266,8 +465,18 @@ public class chessBoardController implements Serializable {
 
                 buttonArray[row][col].setOnMousePressed(mouseEvent -> {
                     if(promotion){
-                        int a = doPromotion(button);
-                        nextTurn(a);
+                        notationHandler.setAll(m1, m2, board.getPiece(m1),board.getPiece(m2));
+                        int a = doPromotion(button, promoteXPos,promoteYPos, player.Colour);
+                        notationHandler.addPromotion(writePromotion(a));
+                        if(promotion) {
+                            playerMove1 = m1;
+                            playerMove2 = m2 + "" + writePromotion(a);
+                            nextTurn(a);
+                            if (trainingActive) {
+                                trainingsModus();
+                            }
+
+                        }
                         m1 = "";
                         m2 = "";
                         promotion = false;
@@ -290,10 +499,7 @@ public class chessBoardController implements Serializable {
                                 m1 = button.getId();
                                 if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
 
-                                    long startTime = System.nanoTime();
                                     possibleBoard = board.getPossible(m1, Zuege);
-                                    long endTime = System.nanoTime();
-                                    System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
 
                                     if (possibleBoard.Possibles()) {
                                         drawWPossible();
@@ -316,8 +522,7 @@ public class chessBoardController implements Serializable {
                                                 dragImageView.setLayoutX(mouseEvent.getSceneX() - gridPane.getWidth() / 8);
                                                 dragImageView.setLayoutY(mouseEvent.getSceneY() - gridPane.getHeight() / 8);
                                             }
-
-                                            button.setGraphic(null);
+                                            button.getGraphic().setOpacity(0.4);
                                         }
                                     } else {
                                         m1 = "";
@@ -329,16 +534,22 @@ public class chessBoardController implements Serializable {
 
                                 boolean x;
                                 if (board.checkPromotion(m1, m2)) {
-                                    showPromotion();
+                                    promoteXPos = xPos;
+                                    promoteYPos = yPos;
+                                    showPromotion(xPos, yPos, player.Colour);
                                     dragImageView.setVisible(false);
                                     removeAllCircles();
                                 } else {
-
+                                        notationHandler.setAll(m1,m2,board.getPiece(m1), board.getPiece(m2));
                                         x = board.doMove(m1, m2, Zuege);
                                         if (x) {
-
+                                            playerMove1 = m1;
+                                            playerMove2 = m2;
                                             nextTurn(0);
                                             dragImageView.setVisible(false);
+                                            if(trainingActive){
+                                               trainingsModus();                                                                                      //<----
+                                            }
 
                                         } else {
                                             dragImageView.setVisible(false);
@@ -356,10 +567,7 @@ public class chessBoardController implements Serializable {
 
                             if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
 
-                                long startTime = System.nanoTime();
                                 possibleBoard = board.getPossible(m1, Zuege);
-                                long endTime = System.nanoTime();
-                                System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
 
                                 if (possibleBoard.Possibles()) {
                                     drawWPossible();
@@ -382,7 +590,7 @@ public class chessBoardController implements Serializable {
                                             dragImageView.setLayoutX(mouseEvent.getSceneX() - gridPane.getWidth() / 8);
                                             dragImageView.setLayoutY(mouseEvent.getSceneY() - gridPane.getHeight() / 8);
                                         }
-                                        button.setGraphic(null);
+                                        button.getGraphic().setOpacity(0.4);
                                     }
                                 } else {
                                     m1 = "";
@@ -397,7 +605,30 @@ public class chessBoardController implements Serializable {
                 //-----------------------------------------------------------------------------------------------------------------
                 //-----------------------------------------------------------------------------------------------------------------
                 buttonArray[row][col].setOnMouseDragged(mouseEvent -> {
+                    int x1 = (int) (mouseEvent.getSceneX() - 50) / 100;
+                    int x2 = (int) (mouseEvent.getSceneY() - 50) / 100;
 
+                    // Stelle sicher, dass die Koordinaten innerhalb des gültigen Bereichs liegen
+                    if (x1 >= 0 && x1 < 8 && x2 >= 0 && x2 < 8) {
+                        Button currentButton = buttonArray[x2][x1];
+
+                        if (board.getBoard()[x2][x1].isPossible) {
+                            if (previousButton != null && previousButton != currentButton) {
+                                previousButton.setOpacity(1); // Setze den vorherigen Button zurück
+                            }
+
+                            currentButton.setOpacity(0.4);
+                            previousButton = currentButton; // Aktualisiere den vorherigen Button
+                        } else {
+                            // Setze alle Buttons zurück, falls keine gültige Position
+                            for (int i = 0; i < 8; i++) {
+                                for (int j = 0; j < 8; j++) {
+                                    buttonArray[i][j].setOpacity(1);
+                                }
+                            }
+                            previousButton = null; // Zurücksetzen, da keine gültige Position
+                        }
+                    }
                     if (rotation == 180) {
                         dragImageView.setLayoutX(gridPane.getWidth() - mouseEvent.getSceneX());
                         dragImageView.setLayoutY(gridPane.getHeight() - mouseEvent.getSceneY());
@@ -410,6 +641,9 @@ public class chessBoardController implements Serializable {
                 //-----------------------------------------------------------------------------------------------------------------
                 //-----------------------------------------------------------------------------------------------------------------
                 buttonArray[row][col].setOnMouseReleased(mouseEvent -> {
+                    if(previousButton != null) {
+                        previousButton.setOpacity(1);
+                    }
                     if(!promotion) {
                         double mouseX = mouseEvent.getSceneX();
                         double mouseY = mouseEvent.getSceneY();
@@ -421,9 +655,10 @@ public class chessBoardController implements Serializable {
                             xPos = 7 - (int) ((mouseX - 50) / 100);
                             yPos = 7 - (int) ((mouseY - 50) / 100);
                         }
-                        m2 = buttonArray[yPos][xPos].getId();
-
-
+                        if(yPos<8 && yPos >= 0 && xPos<8 && xPos>=0) {
+                            m2 = buttonArray[yPos][xPos].getId();
+                        }
+                        notationHandler.setAll(m1,m2,board.getPiece(m1),board.getPiece(m2));
                         if (m1.equals(m2)) {
                             m2 = "";
                             dragImageView.setVisible(false);
@@ -438,17 +673,28 @@ public class chessBoardController implements Serializable {
 
 
                         }else if (board.checkPromotion(m1, m2)) {
-                            showPromotion();
+                            promoteXPos = xPos;
+                            promoteYPos = yPos;
+                            showPromotion(xPos, yPos, player.Colour);
                             dragImageView.setVisible(false);
                             removeAllCircles();
+
                         } else if (board.doMove(m1, m2, Zuege)) {
+                            playerMove1 = m1;
+                            playerMove2 = m2;
+
                             nextTurn(0);
-                            dragImageView.setVisible(false);
+                            dragImageView.setVisible(false);                                                 //<---
                             m1 = "";
                             m2 = "";
                             removeAllCircles();
+
+                            if(trainingActive){
+                                trainingsModus();
+                            }
+
                         } else {
-                            if (button.getGraphic() == null && !m1.isEmpty()) {
+                            if ((button.getGraphic() != null) && (button.getGraphic().getOpacity() != 1) && !m1.isEmpty()) {
                                 ImageView currentPieceView = new ImageView(dragImageView.getImage());
                                 if (rotation == 180) {
                                     currentPieceView.setRotate(180);
@@ -466,229 +712,301 @@ public class chessBoardController implements Serializable {
         }
         drawPieces();
     }
-/*
- double mouseX = mouseEvent.getSceneX();
-                    double mouseY = mouseEvent.getSceneY();
-                    int xPos = (int) ((mouseX - 50) / 100);
-                    int yPos = (int) ((mouseY - 50) / 100);
-                    m2 = buttonArray[yPos][xPos].getId();
 
-
-                    if (m1.equals(m2)) {
-                        System.out.println("1");
-                        m2 = "";
-                        dragImageView.setVisible(false);
-                        button.setGraphic(new ImageView(dragImageView.getImage()));
-                    } else {
-                        System.out.println("2");
-                        if (board.hasPiece(m2) && board.getPieceColour(m1) == board.getPieceColour(m2)) {
-                            System.out.println("3");
-                            m2 = "";
-                            dragImageView.setVisible(false);
-                            System.out.println(button.getId());
-                            button.setGraphic(new ImageView(dragImageView.getImage()));
-                            removeAllCircles();
-
-                            m1 = button.getId();
-                            if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
-                                System.out.println("4");
-                                long startTime = System.nanoTime();
-                                possibleBoard = board.getPossible(m1, Zuege);
-                                long endTime = System.nanoTime();
-                                System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
-
-                                if (possibleBoard.Possibles()) {
-                                    System.out.println("5");
-                                    drawWPossible();
-
-                                    // Drag-Bild initialisieren
-                                    Node graphic = button.getGraphic();
-                                    if (graphic instanceof ImageView) {
-                                        System.out.println("6");
-                                        ImageView imageView = (ImageView) graphic;
-
-                                        dragImageView.setImage(imageView.getImage());
-                                        dragImageView.setFitWidth(imageView.getFitWidth());
-                                        dragImageView.setFitHeight(imageView.getFitHeight());
-                                        dragImageView.setVisible(true); // Drag-Bild anzeigen
-                                        dragImageView.setLayoutX(mouseEvent.getSceneX() - dragImageView.getFitWidth());
-                                        dragImageView.setLayoutY(mouseEvent.getSceneY() - dragImageView.getFitHeight());
-                                        button.setGraphic(null); // Verstecke ursprüngliches Bild
-                                    }
-                                } else {
-                                    m1 = "";
-                                }
-                            } else {
-                                m1 = "";
-                            }
-
-
-                        } else {
-                            System.out.println("7");
-                            boolean x;
-                            if (board.checkPromotion(m1, m2)) {
-                                System.out.println("8");
-                                showPromotion();
-                            } else {
-                                System.out.println("9");
-                                x = board.doMove(m1, m2, Zuege);
-                                if (x) {
-                                    System.out.println("10");
-                                    nextTurn(0);
-                                    System.out.println(Zuege);
-                                    dragImageView.setVisible(false);
-                                }else{
-                                    System.out.println("11");
-                                    button.setGraphic(new ImageView(dragImageView.getImage()));
-                                    dragImageView.setVisible(false);
-                                }
-                                m1 = "";
-                                m2 = "";
-                            }
-                            possibleBoard.clearBoard();
-                            removeAllCircles();
-                        }
-                    }
-                    System.out.println(m1);
-                    System.out.println(m2);*/
-    private void manF(ImageView dragImageView, Button button, MouseEvent mouseEvent){
-
-    }
     @FXML
-    public void boardView(ActionEvent event){
-/*
-        if(promotion){
-            int a = doPromotion(event);
-            nextTurn(a);
-            m1 = "";
-            m2 = "";
-            promotion = false;
-        }
-        if (m1.isEmpty()) {
-            manageFirstClick(event);
-
-        } else {
-            m2 = ((Button) event.getSource()).getId();
-
-            if(board.hasPiece(m2) && board.getPieceColour(m1) == board.getPieceColour(m2)){
-                m2 = "";
-                removeAllCircles();
-                manageFirstClick(event);
-
-            }else {
-                boolean x;
-                if (board.checkPromotion(m1, m2)) {
-                    showPromotion();
-                } else {
-                    x = board.doMove(m1, m2, Zuege);
-                    if (x) {
-                        nextTurn(0);
-                        System.out.println(Zuege);
-                    }
+    public void training() {
+        if(trainingsButton.isSelected()) {
+            if (!moveTree.getWurzelKnoten().isEmpty()) {
+                restartGame();
+                allLines = moveTree.erstellePfade();
+                Collections.shuffle(allLines);
+                currentTrainingsLine = knotenToTurns(moveTree.erstellePfade().getFirst());
+                currentTrainingsLine.removeFirst();
+                trainingActive = true;
+                trainingOnVisual();
+                if (!moveTree.getWurzelColour()) {
+                    m1 = currentTrainingsLine.getFirst().a1;
+                    possibleBoard = board.getPossible(m1, Zuege);
+                    m2 = currentTrainingsLine.getFirst().b1;
+                    board.doSimpleMove(m1, m2, player.Colour, Zuege, count - 1);
+                    currentTrainingsLine.removeFirst();
+                    nextTurn(0);
                     m1 = "";
                     m2 = "";
                 }
-                possibleBoard.clearBoard();
-                removeAllCircles();
             }
-        }*/
+        }else{
+            trainingActive = false;
+            trainingOffVisual();
+            restartGame();
+            gridPane.setStyle("-fx-border-color: transparent; -fx-border-width: 10; -fx-border-insets: -10;");
+        }
     }
-    private void manageFirstClick(){
+    private void wrongMoveVisual(){
+        gridPane.setStyle("-fx-border-color: red; -fx-border-width: 10; -fx-border-insets: -10;");
+        Rectangle filter = new Rectangle(gridPane.getWidth(), gridPane.getHeight(), Color.RED);
+        filter.setBlendMode(BlendMode.OVERLAY);
+        filter.setManaged(false);
+        filter.setMouseTransparent(false);
+        gridPane.getChildren().add(filter);
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(0),
+                        e -> filter.setOpacity(0.2)),
+                new KeyFrame(Duration.seconds(0.025),
+                        e -> filter.setOpacity(0.4)),
+                new KeyFrame(Duration.seconds(0.05),
+                        e -> filter.setOpacity(0.6)),
+                new KeyFrame(Duration.seconds(0.075),
+                        e -> filter.setOpacity(0.4)),
+                new KeyFrame(Duration.seconds(0.1),
+                        e -> filter.setOpacity(0.2)),
+                new KeyFrame(Duration.seconds(0.125),
+                        e -> {  filter.setOpacity(0);
+                                gridPane.setStyle("-fx-border-color: transparent; -fx-border-width: 10; -fx-border-insets: -10;");
+                                gridPane.getChildren().remove(filter);}
+                ));
+        timeline.play();
 
-        if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
-            long startTime = System.nanoTime();
 
+    }
+    boolean trainingActive = false;
+    String playerMove1 = "";
+    String playerMove2 = "";
+    List<ArrayList<Knoten>> allLines;
+    ArrayList<Turn> currentTrainingsLine;
+    private void trainingsModus(){
+        Turn moveByPlayer;
+        if(!currentTrainingsLine.isEmpty()){
+            moveByPlayer = currentTrainingsLine.removeFirst();
+            if(!moveByPlayer.a1.equals(playerMove1) || !moveByPlayer.b1.equals(playerMove2)){
+
+                wrongMoveVisual();
+                System.out.println("Wrong Move");
+                currentTrainingsLine.clear();
+            }
+        }
+
+
+        if(!currentTrainingsLine.isEmpty()) {
+            m1 = currentTrainingsLine.getFirst().a1;
             possibleBoard = board.getPossible(m1, Zuege);
-            long endTime = System.nanoTime();
-            System.out.println("getPossible Execution time:  " + (endTime - startTime) + " ns");
-
-            if (possibleBoard.Possibles()) {
-                drawWPossible();
-            }else{
-                m1 = "";
-            }
-        } else {
+            m2 = currentTrainingsLine.getFirst().b1;
+            board.doSimpleMove(m1, m2, player.Colour, Zuege, count-1);
+        }
+        if(!currentTrainingsLine.isEmpty()){
+            currentTrainingsLine.removeFirst();
+            nextTurn(0);
             m1 = "";
+            m2 = "";
+            removeAllCircles();
         }
+        if(currentTrainingsLine.isEmpty()){
+            board.resetPieces();
+            allLines.removeFirst();
+            if(!allLines.isEmpty()) {
+                currentTrainingsLine = knotenToTurns(allLines.getFirst());
+                currentTrainingsLine.removeFirst();
+                restartGame();
+                if(!moveTree.getWurzelColour()){
+                    m1 = currentTrainingsLine.getFirst().a1;
+                    possibleBoard = board.getPossible(m1, Zuege);
+                    m2 = currentTrainingsLine.getFirst().b1;
+                    board.doSimpleMove(m1, m2, player.Colour, Zuege, count-1);
+                    currentTrainingsLine.removeFirst();
+                    nextTurn(0);
+                    m1 = "";
+                    m2 = "";
+                }
+            }else {
+                trainingActive = false;
+                trainingOffVisual();
+                currentTrainingsLine.clear();
+                restartGame();
+                gridPane.setStyle("-fx-border-color: transparent; -fx-border-width: 10; -fx-border-insets: -10;");
+                trainingsButton.setSelected(false);
+                System.out.println("Training abgeschlossen");
+            }
+        }
+
     }
-
-    //ImageView currentPieceView = (ImageView)((Button) event.getSource()).getGraphic();
-    //currentPieceView.setMouseTransparent(false);
-    //gridPane.getChildren().add(currentPieceView);
-    //draggableMaker.makeDraggable(currentPieceView);
-    private int doPromotion(Button button){
+    private void restartGame(){
+        resetMoveView();
+        board.resetPieces();
+        player.Colour = true;
+        Zuege.clear();
+        drawPieces();
+        count = 0;
+        repaintArrows();
+    }
+    private int doPromotion(Button button, int xPosButton, int yPosButton, boolean colour){
         int x = 0;
-        if(Objects.equals(button.getId(), "c5")){
-            x = 1;
-        }
-        if(Objects.equals(button.getId(), "d5")){
-            x = 2;
-        }
-        if(Objects.equals(button.getId(), "e5")){
-            x = 4;
-        }
-        if(Objects.equals(button.getId(), "f5")){
-            x = 3;
-        }
-        board.promotion(x,m1,m2);
+        if(colour) {
+            if (Objects.equals(button, buttonArray[yPosButton][xPosButton])) {
+                x = 1;
+            }else if (Objects.equals(button, buttonArray[yPosButton + 1][xPosButton])) {
+                x = 2;
+            }else if (Objects.equals(button, buttonArray[yPosButton + 2][xPosButton])) {
+                x = 4;
+            }else if (Objects.equals(button, buttonArray[yPosButton + 3][xPosButton])) {
+                x = 3;
+            }else{
+                promotion = false;
+            }
+            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 0");
+            buttonArray[yPosButton + 1][xPosButton].setStyle("-fx-background-radius: 0");
+            buttonArray[yPosButton + 2][xPosButton].setStyle("-fx-background-radius: 0");
+            buttonArray[yPosButton + 3][xPosButton].setStyle("-fx-background-radius: 0");
 
+
+        }else {
+            if (Objects.equals(button, buttonArray[yPosButton][xPosButton])) {
+                x = 1;
+            }else if (Objects.equals(button, buttonArray[yPosButton - 1][xPosButton])) {
+                x = 2;
+            }else if (Objects.equals(button, buttonArray[yPosButton - 2][xPosButton])) {
+                x = 4;
+            }else if (Objects.equals(button, buttonArray[yPosButton - 3][xPosButton])) {
+                x = 3;
+            }else{
+                promotion = false;
+            }
+            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 0");
+            buttonArray[yPosButton - 1][xPosButton].setStyle("-fx-background-radius: 0");
+            buttonArray[yPosButton - 2][xPosButton].setStyle("-fx-background-radius: 0");
+            buttonArray[yPosButton - 3][xPosButton].setStyle("-fx-background-radius: 0");
+
+        }
+        if(promotion) {
+            board.promotion(x, m1, m2);
+        }
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                buttonArray[i][j].setVisible(true);
+                buttonArray[i][j].setOpacity(1);
             }
         }
+        drawPieces();
         return x;
     }
-    private void showPromotion(){
+    private void showPromotion(int xPosButton, int yPosButton, boolean colour){
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                buttonArray[i][j].setVisible(false);
+                buttonArray[i][j].setOpacity(0.2);
             }
         }
-        buttonArray[3][2].setVisible(true);
-        buttonArray[3][3].setVisible(true);
-        buttonArray[3][4].setVisible(true);
-        buttonArray[3][5].setVisible(true);
-
-        Queen queen = new Queen(player.Colour);
-        Rook rook = new Rook(player.Colour, true);
-        Bishop bishop = new Bishop(player.Colour);
-        Knight knight = new Knight(player.Colour);
+        Queen queen = new Queen(colour);
+        Rook rook = new Rook(colour, true);
+        Bishop bishop = new Bishop(colour);
+        Knight knight = new Knight(colour);
 
         ImageView queenView = new ImageView(queen.getImage());
         ImageView rookView = new ImageView(rook.getImage());
         ImageView bishopView = new ImageView(bishop.getImage());
         ImageView knightView = new ImageView(knight.getImage());
 
-        buttonArray[3][2].setGraphic(queenView);
-        buttonArray[3][3].setGraphic(rookView);
-        buttonArray[3][4].setGraphic(bishopView);
-        buttonArray[3][5].setGraphic(knightView);
+        if(colour) {
+            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 90");
+            buttonArray[yPosButton + 1][xPosButton].setStyle("-fx-background-radius: 90");
+            buttonArray[yPosButton + 2][xPosButton].setStyle("-fx-background-radius: 90");
+            buttonArray[yPosButton + 3][xPosButton].setStyle("-fx-background-radius: 90");
 
-        buttonArray[3][2].setVisible(true);
-        buttonArray[3][3].setVisible(true);
-        buttonArray[3][4].setVisible(true);
-        buttonArray[3][5].setVisible(true);
+            buttonArray[yPosButton][xPosButton].setOpacity(1);
+            buttonArray[yPosButton + 1][xPosButton].setOpacity(1);
+            buttonArray[yPosButton + 2][xPosButton].setOpacity(1);
+            buttonArray[yPosButton + 3][xPosButton].setOpacity(1);
+
+            buttonArray[yPosButton][xPosButton].setGraphic(queenView);
+            buttonArray[yPosButton+1][xPosButton].setGraphic(rookView);
+            buttonArray[yPosButton+2][xPosButton].setGraphic(bishopView);
+            buttonArray[yPosButton+3][xPosButton].setGraphic(knightView);
+            if(rotation == 180){
+                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(180);
+                buttonArray[yPosButton + 1][xPosButton].getGraphic().setRotate(180);
+                buttonArray[yPosButton + 2][xPosButton].getGraphic().setRotate(180);
+                buttonArray[yPosButton + 3][xPosButton].getGraphic().setRotate(180);
+            }else{
+                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(0);
+                buttonArray[yPosButton + 1][xPosButton].getGraphic().setRotate(0);
+                buttonArray[yPosButton + 2][xPosButton].getGraphic().setRotate(0);
+                buttonArray[yPosButton + 3][xPosButton].getGraphic().setRotate(0);
+            }
+        }else{
+            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 90");
+            buttonArray[yPosButton - 1][xPosButton].setStyle("-fx-background-radius: 90");
+            buttonArray[yPosButton - 2][xPosButton].setStyle("-fx-background-radius: 90");
+            buttonArray[yPosButton - 3][xPosButton].setStyle("-fx-background-radius: 90");
+
+            buttonArray[yPosButton][xPosButton].setOpacity(1);
+            buttonArray[yPosButton - 1][xPosButton].setOpacity(1);
+            buttonArray[yPosButton - 2][xPosButton].setOpacity(1);
+            buttonArray[yPosButton - 3][xPosButton].setOpacity(1);
+
+            buttonArray[yPosButton][xPosButton].setGraphic(queenView);
+            buttonArray[yPosButton-1][xPosButton].setGraphic(rookView);
+            buttonArray[yPosButton-2][xPosButton].setGraphic(bishopView);
+            buttonArray[yPosButton-3][xPosButton].setGraphic(knightView);
+            if(rotation == 180){
+                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(180);
+                buttonArray[yPosButton - 1][xPosButton].getGraphic().setRotate(180);
+                buttonArray[yPosButton - 2][xPosButton].getGraphic().setRotate(180);
+                buttonArray[yPosButton - 3][xPosButton].getGraphic().setRotate(180);
+            }else{
+                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(0);
+                buttonArray[yPosButton - 1][xPosButton].getGraphic().setRotate(0);
+                buttonArray[yPosButton - 2][xPosButton].getGraphic().setRotate(0);
+                buttonArray[yPosButton - 3][xPosButton].getGraphic().setRotate(0);
+            }
+        }
+
 
         promotion = true;
     }
+    private void trainingOnVisual(){
+        removeButton.setDisable(true);
+        forwardButton.setDisable(true);
+        backwardButton.setDisable(true);
+        toStartButton.setDisable(true);
+        toEndButton.setDisable(true);
+        saveButton.setDisable(true);
+        rotateButton.setDisable(true);
+    }
+    private void trainingOffVisual(){
+        removeButton.setDisable(false);
+        forwardButton.setDisable(false);
+        backwardButton.setDisable(false);
+        toStartButton.setDisable(false);
+        toEndButton.setDisable(false);
+        saveButton.setDisable(false);
+        rotateButton.setDisable(false);
+    }
+    private ArrayList<Turn> knotenToTurns(ArrayList<Knoten> c){
+        ArrayList<Turn> b = new ArrayList<>();
+        for(Knoten knoten : c){
+            b.add(knoten.getTurn());
+        }
+        return b;
+    }
+    NotationHandler notationHandler = new NotationHandler("", "", new Pawn(false, false), new Pawn(false, false), false);
     private void nextTurn(int p){
-
+        String notationHandled = "";
         if(promotion){
-            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, (m2 + "" + writePromotion(p))));
-            manageMoveView(m1, m2 + "" + writePromotion(p));
+            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, (m2 + "" + writePromotion(p)), notationHandled));
+            notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
+            notationHandled = notationHandler.handleNotation();
+            manageMoveView(notationHandled);
         }else {
-            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2));
-            manageMoveView(m1, m2);
+            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2, notationHandler.handleNotation()));
+            notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
+            notationHandled = notationHandler.handleNotation();
+            manageMoveView(notationHandled);
         }
         player.Colour = !player.Colour;
         ZuegeSpeicher = (ArrayList<Turn>) Zuege.clone();
+
         possibleBoard.clearBoard();
 
         count++;
         repaintArrows();
-        long startTime = System.nanoTime();
 
         if (!board.checkCheckmate(Zuege, player.Colour, board)){
             System.out.println("Checkmate");
@@ -696,9 +1014,7 @@ public class chessBoardController implements Serializable {
                 System.out.println(turn.a1 + "|" + turn.b1);
             }
         }
-        long endTime = System.nanoTime();
         drawPieces();
-        System.out.println("checkCheckmate Execution time:  " + (endTime - startTime) + " ns");
     }
     private String writePromotion(int p){
         return switch (p) {
@@ -717,7 +1033,8 @@ public class chessBoardController implements Serializable {
             openingsView.getItems().removeLast();
         }
         for(Turn turn: nextMoves) {
-            openingsView.getItems().add(turn.a1 + " " + turn.b1);
+            notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
+            openingsView.getItems().add(notationHandler.handleNotation());
         }
     }
     public void drawAllArrows(ArrayList<Turn> Zuege){
@@ -728,7 +1045,9 @@ public class chessBoardController implements Serializable {
                 drawArrow(turn.a1, turn.b1);
             }
         }
+        arrowID = 0;
     }
+    int arrowID = 0;
     public void drawArrow(String a, String b) {
         double x1, y1;
         double x2, y2;
@@ -769,16 +1088,20 @@ public class chessBoardController implements Serializable {
         line.setStrokeWidth(20);
         line.setManaged(false);
         line.setOpacity(0.3);
+        line.setId(STR."\{arrowID}");
         Polygon arrowHead = new Polygon();
         arrowHead.getPoints().addAll(
                 x2, y2,
                 m1, n1,
                 m2, n2
         );
+        arrowHead.setId(STR."\{arrowID}");
         arrowHead.setFill(Color.GREEN);
         arrowHead.setMouseTransparent(true);
         arrowHead.setManaged(false);
         arrowHead.setOpacity(0.3);
+
+        arrowID++;
         gridPane.getChildren().addAll(line, arrowHead);
     }
     public void removeAllArrows() {
@@ -789,19 +1112,18 @@ public class chessBoardController implements Serializable {
     private void removeAllCircles(){
         gridPane.getChildren().removeIf(node -> node instanceof Circle);
     }
-    private void manageMoveView(String a, String b){
+    private void manageMoveView(String a){
         if(player.Colour){
-            movesView.getItems().add(count/2, (count + 2) / 2 + ".  " + a + "-" + b);
-            moveView = (a + "-" + b);
+            movesView.getItems().add(count/2, (count + 2) / 2 + ".  " + a);
+            moveView = (a);
         }else{
-            movesView.getItems().add(count/2,(count + 2) / 2 + ".  " + moveView + " | " + a + "-" + b);
+            movesView.getItems().add(count/2,(count + 2) / 2 + ".  " + moveView + " | " + a);
             movesView.getItems().removeLast();
         }
     }
     private void resetMoveView(){
         movesView.getItems().clear();
     }
-
 
     private void drawPieces() {
         Field[][] field = board.getBoard();
@@ -814,14 +1136,9 @@ public class chessBoardController implements Serializable {
 
                     buttonArray[i][j].setGraphic(ik);
                     buttonArray[i][j].getGraphic().setRotate(rotation);
-                    //ik.setX(j*100);
-                    //ik.setY(i*100);
-                    //ik.setManaged(false);
-                    //gridPane.getChildren().add(ik);
-                    // Make the piece draggable
-                    //draggableMaker.makeDraggable(ik);
 
-                    // Add drag-and-drop event listeners
+                    // Sicherstellen, dass die Schaltfläche neu gezeichnet wird
+                    buttonArray[i][j].requestLayout();  // Erzwingt eine Neuberechnung des Layouts
                 } else {
                     buttonArray[i][j].setGraphic(null);
                 }
@@ -847,13 +1164,14 @@ public class chessBoardController implements Serializable {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (b[i][j].isPossible) {
+                    int[] arr = {i, j};
                     gridPane.getChildren().add(drawPoint(i,j));
+                    int finalI = i;
+                    int finalJ = j;
+                    //buttonArray[i][j].setOnMouseDragEntered(event -> buttonArray[finalI][finalJ].setStyle("-fx-background-color: green"));
                 }
             }
         }
-    }
-    public Field[][] getBoard(){
-        return board.getBoard();
     }
 
 }

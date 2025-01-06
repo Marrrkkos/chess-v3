@@ -8,7 +8,8 @@ import java.util.ArrayList;
 
 public abstract class Piece {
     public abstract Image getImage();
-    public abstract String draw();
+    @Override
+    public abstract String toString();
     public abstract Piece getPiece();
     public abstract boolean canMove(int[]pos1, int[]pos2, Field[][] Brett, ArrayList<Turn> Zuege);
     public abstract boolean getColour();

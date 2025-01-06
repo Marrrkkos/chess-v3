@@ -126,7 +126,7 @@ public class Board{
                     }
                 }
             }
-            if ((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) {
+            if (((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) && getPiece(a).getID() == 6) {
                 Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
                 Brett[pos1[0]][pos1[1]].piece = null;
 
@@ -134,7 +134,7 @@ public class Board{
                 Brett[pos1[0]][pos1[1] + 3].piece = null;
 
                 //Long Castle
-            } else if ((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) {
+            } else if (((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) && getPiece(a).getID() == 6) {
                 Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
                 Brett[pos1[0]][pos1[1]].piece = null;
 
@@ -228,8 +228,7 @@ public class Board{
 
 
                 //Short Castle
-
-                if ((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) {
+                if (((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) && getPiece(a).getID() == 6) {
                     Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
                     Brett[pos1[0]][pos1[1]].piece = null;
 
@@ -237,7 +236,7 @@ public class Board{
                     Brett[pos1[0]][pos1[1] + 3].piece = null;
 
                     //Long Castle
-                } else if ((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) {
+                } else if (((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) && getPiece(a).getID() == 6) {
                     Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
                     Brett[pos1[0]][pos1[1]].piece = null;
 
@@ -248,6 +247,7 @@ public class Board{
                     Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
                     Brett[pos1[0]][pos1[1]].piece = null;
                 }
+
 
             }
 
@@ -424,10 +424,8 @@ public class Board{
                         //remove enPasant when in check
                         if(piece.getID() == 1 && pos1[1] != j && field[i][j].piece == null){
                             if (piece.getColour()){
-                                System.out.println(field[j][i+1].name);
                                 BrettCopy[i+1][j].piece = null;
                             }else{
-                                System.out.println(field[j][i-1].name);
                                 BrettCopy[i-1][j].piece = null;
                             }
 
@@ -551,6 +549,14 @@ public class Board{
     public boolean getPieceColour(String a){
         int[] arr = NameToCoordinate(a);
         return Brett[arr[0]][arr[1]].piece.getColour();
+    }
+    public Piece getPiece(String a){
+        int[] arr = NameToCoordinate(a);
+        if(Brett[arr[0]][arr[1]].piece != null) {
+            return Brett[arr[0]][arr[1]].piece.getPiece();
+        }else{
+            return null;
+        }
     }
     public boolean Possibles(){        //return true wenn no possible moves
         for (int i = 0; i < 8; i++) {

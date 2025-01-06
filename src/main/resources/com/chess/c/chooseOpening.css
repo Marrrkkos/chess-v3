@@ -40,19 +40,27 @@
     -fx-border-radius: 5px;
 }
 
+.label{
+    -fx-padding: 10 20;
+    -fx-font-size: 14px;
+    -fx-font-family: "Arial";
+    -fx-background-radius: 5px;
+    -fx-cursor: hand;
+
+    -fx-background-color: #6e2c2c; /* Dunkles Braun */
+    -fx-text-fill: white;
+    -fx-border-radius: 5px;
+    -fx-border-color: beige;
+    -fx-border-width: 2px;
+}
 /* Buttons */
 .button {
     -fx-padding: 10 20;
     -fx-font-size: 14px;
     -fx-font-family: "Arial";
-    -fx-text-fill: #ffffff;
     -fx-background-radius: 5px;
-    -fx-border-width: 0;
     -fx-cursor: hand;
-}
 
-/* "ADD"-Button: Runde Form */
-#addButton {
     -fx-background-color: #6e2c2c; /* Dunkles Braun */
     -fx-min-width: 40px;
     -fx-min-height: 40px;
@@ -61,66 +69,11 @@
     -fx-border-color: beige;
     -fx-border-width: 2px;
 }
-
-#addButton:hover {
-    -fx-background-color: #854141; /* Helleres Braun */
-}
-
-#addButton:pressed {
+.button:pressed{
     -fx-background-color: #5e5e5e; /* Noch dunkler bei Klick */
 }
-
-/* "DELETE"-Button: Rechteckig */
-#deleteButton {
-    -fx-background-color: #6e2c2c; /* Dunkles Braun */
-    -fx-text-fill: white;
-    -fx-border-radius: 5px;
-    -fx-border-color: beige;
-    -fx-border-width: 2px;
-}
-
-#deleteButton:hover {
+.button:hover{
     -fx-background-color: #854141; /* Helleres Braun */
 }
 
-#deleteButton:pressed {
-    -fx-background-color: #5e5e5e; /* Noch dunklerer Ton */
-}
-
-/* "START"-Button: Rechteckig */
-#startButton {
-    -fx-background-color: #6e2c2c; /* Dunkles Braun */
-    -fx-text-fill: white;
-    -fx-border-radius: 5px;
-    -fx-border-color: beige;
-    -fx-border-width: 2px;
-}
-
-#startButton:hover {
-    -fx-background-color: #854141; /* Helleres Braun */
-}
-
-#startButton:pressed {
-    -fx-background-color: #5e5e5e; /* Dunkler bei Klick */
-}
-
-/* "ADD OPENING"-Button: Runde Form */
-#addOpeningButton {
-    -fx-background-color: #6e2c2c; /* Dunkles Braun */
-    -fx-background-radius: 50px;
-    -fx-min-width: 40px;
-    -fx-min-height: 40px;
-    -fx-text-fill: white;
-    -fx-border-radius: 5px;
-    -fx-border-color: beige;
-    -fx-border-width: 2px;
-}
-
-#addOpeningButton:hover {
-    -fx-background-color: #854141; /* Helleres Braun */
-}
-
-#addOpeningButton:pressed {
-    -fx-background-color: #5e5e5e; /* Noch dunkler bei Klick */
-}
 

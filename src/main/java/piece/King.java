@@ -28,7 +28,8 @@ public class  King extends Piece {
         }
 
     }
-    public String draw(){
+    @Override
+    public String toString(){
         if(colour) {
             return " WKing ";
         }else{

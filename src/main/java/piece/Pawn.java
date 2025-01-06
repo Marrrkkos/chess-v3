@@ -27,7 +27,8 @@ public class  Pawn extends Piece {
         }
 
     }
-    public String draw(){
+    @Override
+    public String toString(){
         if(colour) {
             return " WPawn ";
         }else{

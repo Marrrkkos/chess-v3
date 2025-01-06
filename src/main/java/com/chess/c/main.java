@@ -18,13 +18,14 @@ public class main extends Application {
         stage.show();
     }
     //TODO
-    //  TrainingsModus
-    //  Improve Remove-Line
-    //  Improve showPromotion  
-    //  Notation  <-
-    //  BrettNotation  <-
-    //  ListView interaction
-    //  improve removeOpening
+    //  improve ListView interaction
+    //  BrettNotation
+    //  Sounds
+
+    //TODO 1
+    //  Same window
+    //  Window Size
+    //  move Training Animation
     public static void main(String[] args) {
         launch();
     }

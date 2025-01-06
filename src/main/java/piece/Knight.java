@@ -15,11 +15,12 @@ public class Knight extends Piece{
         this.colour = colour;
     }
 
-    public String draw(){
+    @Override
+    public String toString(){
         if(colour) {
-            return "WKnight";
+            return "WNight";
         }else{
-            return "BKnight";
+            return "BNight";
         }
     }
     Image WKnight = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/pieces/w-knight.png")));

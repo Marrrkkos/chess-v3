@@ -24,7 +24,8 @@ public class  Queen extends Piece {
         }
 
     }
-    public String draw(){
+    @Override
+    public String toString(){
         if(colour) {
             return "WQueen ";
         }else{

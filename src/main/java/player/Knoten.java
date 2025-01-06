@@ -22,4 +22,7 @@ public class Knoten implements Serializable {
     public ArrayList<Knoten> getChildren(){
         return children;
     }
+    public Turn getTurn(){
+        return turn;
+    }
 }
