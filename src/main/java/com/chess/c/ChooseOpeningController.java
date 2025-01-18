@@ -10,10 +10,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import player.Turn;
-import player.moveTree;
+import player.MoveTree;
 
 import java.io.*;
-import java.util.ArrayList;
 
 public class ChooseOpeningController {
 
@@ -122,7 +121,7 @@ public class ChooseOpeningController {
             String fileName = "Openings/" + nameField.getCharacters().toString();
             new File(fileName);
 
-                moveTree moveTree = new moveTree(new Turn(colourButton.isSelected()));
+                MoveTree moveTree = new MoveTree(new Turn(colourButton.isSelected()));
 
                 try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
                     oos.writeObject(moveTree);

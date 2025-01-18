@@ -27,7 +27,7 @@ import piece.*;
 import player.Knoten;
 import player.Player;
 import player.Turn;
-import player.moveTree;
+import player.MoveTree;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +36,7 @@ import java.util.Objects;
 
 public class chessBoardController implements Serializable {
 
-    moveTree moveTree = new moveTree(new Turn(true));
+    MoveTree moveTree = new MoveTree(new Turn(true));
 
     final int FIELDSIZE = 100;
     @FXML
@@ -78,6 +78,7 @@ public class chessBoardController implements Serializable {
     String m2 = "";
     String moveView = "";
 
+    DrawOnBoard drawOnBoard = new DrawOnBoard();
     Boolean promotion = false;
 
     String chosenOpening = "";
@@ -117,7 +118,7 @@ public class chessBoardController implements Serializable {
                 count++;
                 player.Colour = !player.Colour;
             }
-            drawPieces();
+            drawOnBoard.drawPieces(board,buttonArray,rotation);
             repaintArrows();
         }
     }
@@ -140,7 +141,7 @@ public class chessBoardController implements Serializable {
             }
             removeAllCircles();
             possibleBoard.clearBoard();
-            drawPieces();
+            drawOnBoard.drawPieces(board,buttonArray,rotation);
             repaintArrows();
         }
     }
@@ -164,7 +165,7 @@ public class chessBoardController implements Serializable {
             player.Colour = !player.Colour;
             count++;
         }
-        drawPieces();
+        drawOnBoard.drawPieces(board,buttonArray,rotation);
         repaintArrows();
     }
     @FXML
@@ -300,6 +301,18 @@ public class chessBoardController implements Serializable {
             repaintArrows();
         }
     }
+    private void repaintArrows(){
+        ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
+        removeAllArrows();
+        drawAllArrows(nextMoves);
+        while(!openingsView.getItems().isEmpty()) {
+            openingsView.getItems().removeLast();
+        }
+        for(Turn turn: nextMoves) {
+            notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
+            openingsView.getItems().add(notationHandler.handleNotation());
+        }
+    }
     public void areYouSure(String move1, String move2){
         StackPane overlayPane = new StackPane();
         overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);"); // Transparenter Hintergrund
@@ -312,7 +325,7 @@ public class chessBoardController implements Serializable {
         Label label = new Label("Sicher?");
         Button button1 = new Button("Yes");
         Button button2 = new Button("No");
-        player.moveTree moveTree1 = new moveTree(new Turn(true));
+        MoveTree moveTree1 = new MoveTree(new Turn(true));
 
         Zuege.add(count, new Turn(count, (count + 2) / 2, move1, (move2), ""));
         moveTree1.addKnoten(moveTree.getSubTree(Zuege));
@@ -383,7 +396,7 @@ public class chessBoardController implements Serializable {
                 player.Colour = !player.Colour;
             }
 
-            drawPieces();
+            drawOnBoard.drawPieces(board,buttonArray,rotation);
             repaintArrows();
             removeButton.setSelected(false);
 
@@ -401,7 +414,7 @@ public class chessBoardController implements Serializable {
     public void loadTree(){
         String dateiName = "Openings/" + chosenOpening;
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(dateiName))) {
-            moveTree = (moveTree) ois.readObject();
+            moveTree = (MoveTree) ois.readObject();
 
             System.out.println("Objekt geladen: " + moveTree);
             ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
@@ -710,7 +723,7 @@ public class chessBoardController implements Serializable {
                 });
             }
         }
-        drawPieces();
+        drawOnBoard.drawPieces(board,buttonArray,rotation);
     }
 
     @FXML
@@ -834,7 +847,7 @@ public class chessBoardController implements Serializable {
         board.resetPieces();
         player.Colour = true;
         Zuege.clear();
-        drawPieces();
+        drawOnBoard.drawPieces(board,buttonArray,rotation);
         count = 0;
         repaintArrows();
     }
@@ -885,7 +898,7 @@ public class chessBoardController implements Serializable {
                 buttonArray[i][j].setOpacity(1);
             }
         }
-        drawPieces();
+        drawOnBoard.drawPieces(board,buttonArray,rotation);
         return x;
     }
     private void showPromotion(int xPosButton, int yPosButton, boolean colour){
@@ -1014,7 +1027,7 @@ public class chessBoardController implements Serializable {
                 System.out.println(turn.a1 + "|" + turn.b1);
             }
         }
-        drawPieces();
+        drawOnBoard.drawPieces(board, buttonArray, rotation);
     }
     private String writePromotion(int p){
         return switch (p) {
@@ -1025,85 +1038,18 @@ public class chessBoardController implements Serializable {
             default -> "=Q";
         };
     }
-    private void repaintArrows(){
-        ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
-        removeAllArrows();
-        drawAllArrows(nextMoves);
-        while(!openingsView.getItems().isEmpty()) {
-            openingsView.getItems().removeLast();
-        }
-        for(Turn turn: nextMoves) {
-            notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
-            openingsView.getItems().add(notationHandler.handleNotation());
-        }
-    }
+
     public void drawAllArrows(ArrayList<Turn> Zuege){
         for(Turn turn: Zuege){
             if(turn.b1.contains("=")) {
-                drawArrow(turn.a1, turn.b1.substring(0, 2));
+                drawOnBoard.drawArrow(turn.a1, turn.b1.substring(0, 2),FIELDSIZE, board, gridPane);
             }else{
-                drawArrow(turn.a1, turn.b1);
+                drawOnBoard.drawArrow(turn.a1, turn.b1, FIELDSIZE, board, gridPane);
             }
         }
         arrowID = 0;
     }
     int arrowID = 0;
-    public void drawArrow(String a, String b) {
-        double x1, y1;
-        double x2, y2;
-
-        int[] firstCoordinate = board.NameToCoordinate(a);
-        int[] secondCoordinate = board.NameToCoordinate(b);
-
-        x1 = firstCoordinate[1] * FIELDSIZE + 50;
-        y1 = firstCoordinate[0] * FIELDSIZE + 50;
-        x2 = secondCoordinate[1] * FIELDSIZE + 50;
-        y2 = secondCoordinate[0] * FIELDSIZE + 50;
-
-        Line line = new Line();
-
-
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double angle = Math.atan2(dy, dx);
-
-        double arrowLength = 45;
-        double arrowWidth = 65;
-
-        double adjustedEndX = x2 - arrowLength * Math.cos(angle)*1.22;
-        double adjustedEndY = y2 - arrowLength * Math.sin(angle)*1.22;
-
-        double m1 = x2 - arrowLength * Math.cos(angle) + arrowWidth / 2 * Math.sin(angle);
-        double n1 = y2 - arrowLength * Math.sin(angle) - arrowWidth / 2 * Math.cos(angle);
-
-        double m2 = x2 - arrowLength * Math.cos(angle) - arrowWidth / 2 * Math.sin(angle);
-        double n2 = y2 - arrowLength * Math.sin(angle) + arrowWidth / 2 * Math.cos(angle);
-
-        line.setStartX(x1);
-        line.setStartY(y1);
-        line.setEndX(adjustedEndX);
-        line.setEndY(adjustedEndY);
-        line.setMouseTransparent(true);
-        line.setStroke(Color.GREEN);
-        line.setStrokeWidth(20);
-        line.setManaged(false);
-        line.setOpacity(0.3);
-        line.setId(STR."\{arrowID}");
-        Polygon arrowHead = new Polygon();
-        arrowHead.getPoints().addAll(
-                x2, y2,
-                m1, n1,
-                m2, n2
-        );
-        arrowHead.setId(STR."\{arrowID}");
-        arrowHead.setFill(Color.GREEN);
-        arrowHead.setMouseTransparent(true);
-        arrowHead.setManaged(false);
-        arrowHead.setOpacity(0.3);
-
-        arrowID++;
-        gridPane.getChildren().addAll(line, arrowHead);
-    }
     public void removeAllArrows() {
         // Filtern und alle Lines entfernen
         gridPane.getChildren().removeIf(node -> node instanceof Line);
@@ -1123,27 +1069,6 @@ public class chessBoardController implements Serializable {
     }
     private void resetMoveView(){
         movesView.getItems().clear();
-    }
-
-    private void drawPieces() {
-        Field[][] field = board.getBoard();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (field[i][j].piece != null) {
-                    ImageView ik = new ImageView(field[i][j].piece.getImage());
-                    ik.setFitHeight(100);
-                    ik.setFitWidth(100);
-
-                    buttonArray[i][j].setGraphic(ik);
-                    buttonArray[i][j].getGraphic().setRotate(rotation);
-
-                    // Sicherstellen, dass die Schaltfläche neu gezeichnet wird
-                    buttonArray[i][j].requestLayout();  // Erzwingt eine Neuberechnung des Layouts
-                } else {
-                    buttonArray[i][j].setGraphic(null);
-                }
-            }
-        }
     }
 
 
@@ -1166,9 +1091,6 @@ public class chessBoardController implements Serializable {
                 if (b[i][j].isPossible) {
                     int[] arr = {i, j};
                     gridPane.getChildren().add(drawPoint(i,j));
-                    int finalI = i;
-                    int finalJ = j;
-                    //buttonArray[i][j].setOnMouseDragEntered(event -> buttonArray[finalI][finalJ].setStyle("-fx-background-color: green"));
                 }
             }
         }

@@ -64,7 +64,7 @@
                     <execution>
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.chess.c.main</mainClass> <!-- Ihre Main-Klasse -->
+                            <mainClass>com.chess.c.Main</mainClass> <!-- Ihre Main-Klasse -->
                             <addModules>javafx.controls,javafx.fxml</addModules>
                         </configuration>
                     </execution>
@@ -86,7 +86,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>com.chess.c.main</mainClass> <!-- Ihre Main-Klasse -->
+                                    <mainClass>com.chess.c.Main</mainClass> <!-- Ihre Main-Klasse -->
                                 </manifest>
                             </archive>
                             <descriptorRefs>

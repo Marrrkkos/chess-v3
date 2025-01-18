@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-public class moveTree implements Serializable {
+public class MoveTree implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 3403983621295530595L;
     private final Knoten Wurzel;
 
-    public moveTree(Turn turn){
+    public MoveTree(Turn turn){
         this.Wurzel = new Knoten(turn);
     }
     public void add(ArrayList<Turn> Zuege){
