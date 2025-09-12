@@ -58,13 +58,11 @@ public class  Pawn extends Piece {
     public Field[][] possibleFields(int[] pos1, Field[][] Brett, ArrayList<Turn> Zuege) {
         int x1 = pos1[0];
         int y1 = pos1[1];
-        int direction = this.colour ? -1 : 1; // -1 für Weiß, +1 für Schwarz
+        int direction = this.colour ? -1 : 1; //Weiß oder Schwarz
 
-        // Reguläre Bewegungen: Ein Feld vorwärts
         if (isInBounds(x1 + direction, y1) && Brett[x1 + direction][y1].piece == null) {
             Brett[x1 + direction][y1].isPossible = true;
 
-            // Zwei Felder vorwärts (nur Startposition)
             if ((this.colour && x1 == 6) || (!this.colour && x1 == 1)) {
                 if (Brett[x1 + 2 * direction][y1].piece == null) {
                     Brett[x1 + 2 * direction][y1].isPossible = true;
@@ -72,15 +70,12 @@ public class  Pawn extends Piece {
             }
         }
 
-        // Schlagen von Gegnern
         checkCaptureMoves(x1, y1, direction, Brett);
 
-        // En passant
         if ((this.colour && x1 == 3) || (!this.colour && x1 == 4)) {
             checkEnPassant(pos1, Brett, Zuege, direction);
         }
 
-        // Rückgabe des Bretts, kein weiteres Handeln notwendig
         return Brett;
     }
 
@@ -109,23 +104,19 @@ public class  Pawn extends Piece {
         int[] startPos = board.NameToCoordinate(lastTurn.a1);
         int[] endPos = board.NameToCoordinate(lastTurn.b1);
 
-        // Prüfen, ob En Passant möglich ist
-        if (Math.abs(startPos[0] - endPos[0]) == 2) { // Letzter Zug war ein Doppelschritt
+        if (Math.abs(startPos[0] - endPos[0]) == 2) {
             int opponentX = endPos[0];
             int opponentY = endPos[1];
 
-            // Links
             if (y1 > 0 && Brett[x1][y1 - 1].name.equals(Brett[opponentX][opponentY].name)) {
                 Brett[x1 + direction][y1 - 1].isPossible = true;
             }
-            // Rechts
             if (y1 < 7 && Brett[x1][y1 + 1].name.equals(Brett[opponentX][opponentY].name)) {
                 Brett[x1 + direction][y1 + 1].isPossible = true;
             }
         }
     }
 
-    // Utility-Methode zur Prüfung, ob Koordinaten im Brett liegen
     private boolean isInBounds(int x, int y) {
         return x >= 0 && x < 8 && y >= 0 && y < 8;
     }

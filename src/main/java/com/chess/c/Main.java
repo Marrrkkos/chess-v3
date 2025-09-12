@@ -21,11 +21,10 @@ public class Main extends Application {
     //  improve ListView interaction
     //  BrettNotation
     //  Sounds
-
-    //TODO 1
     //  Same window
     //  Window Size
     //  move Training Animation
+    //  BugFixes
     public static void main(String[] args) {
         launch();
     }

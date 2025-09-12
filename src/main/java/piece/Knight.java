@@ -54,21 +54,18 @@ public class Knight extends Piece{
         int x1 = pos1[0];
         int y1 = pos1[1];
 
-        // Alle möglichen Bewegungen des Springers
         int[][] moves = {
                 {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
                 {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
         };
 
-        // Iteriere über alle möglichen Bewegungen
         for (int[] move : moves) {
             int newX = x1 + move[0];
             int newY = y1 + move[1];
 
-            if (isInBounds(newX, newY)) { // Überprüfe, ob die neue Position innerhalb des Bretts liegt
+            if (isInBounds(newX, newY)) {
                 Field targetField = Brett[newX][newY];
 
-                // Setze das Feld als möglich, wenn es leer ist oder eine gegnerische Figur enthält
                 if (targetField.piece == null || targetField.piece.getColour() != Brett[x1][y1].piece.getColour()) {
                     targetField.isPossible = true;
                 }
@@ -78,13 +75,6 @@ public class Knight extends Piece{
         return Brett;
     }
 
-    /**
-     * Prüft, ob die Koordinaten innerhalb der Brettgrenzen liegen.
-     *
-     * @param x Die X-Koordinate
-     * @param y Die Y-Koordinate
-     * @return true, wenn die Koordinaten gültig sind
-     */
     private boolean isInBounds(int x, int y) {
         return x >= 0 && x < 8 && y >= 0 && y < 8;
     }
