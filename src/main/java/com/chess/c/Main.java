@@ -18,9 +18,9 @@ public class Main extends Application {
         stage.show();
     }
     //TODO
+    //  Sounds
     //  improve ListView interaction
     //  BrettNotation
-    //  Sounds
     //  Same window
     //  Window Size
     //  move Training Animation
