@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 
@@ -15,11 +16,11 @@ public class DrawOnBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (field[i][j].piece != null) {
-                    ImageView ik = new ImageView(field[i][j].piece.getImage());
-                    ik.setFitHeight(100);
-                    ik.setFitWidth(100);
+                    ImageView pieceImage = new ImageView(field[i][j].piece.getImage());
+                    pieceImage.setFitHeight(100);
+                    pieceImage.setFitWidth(100);
 
-                    buttonArray[i][j].setGraphic(ik);
+                    buttonArray[i][j].setGraphic(pieceImage);
                     buttonArray[i][j].getGraphic().setRotate(rotation);
                 } else {
                     buttonArray[i][j].setGraphic(null);
@@ -27,18 +28,52 @@ public class DrawOnBoard {
             }
         }
     }
-    int arrowID = 0;
-    public void drawArrow(String a, String b, int FIELDSIZE, Board board, GridPane gridPane) {
+
+    public void removeAllArrows(GridPane gridPane) {
+        // Filtern und alle Lines entfernen
+        gridPane.getChildren().removeIf(node -> node instanceof Line);
+        gridPane.getChildren().removeIf(node -> node instanceof Polygon);
+    }
+    public void removeAllCircles(GridPane gridPane){
+        gridPane.getChildren().removeIf(node -> node instanceof Circle);
+    }
+    private Circle drawPoint(double i, double j){
+        Circle circle = new Circle();
+        circle.setCenterX(j*100+50);
+        circle.setCenterY(i*100+50);
+        circle.setManaged(false);
+        circle.setRadius(12);
+        circle.setOpacity(0.8);
+        circle.setFill(Color.GRAY);
+        circle.setMouseTransparent(true);
+
+        return circle;
+    }
+    public void drawAllPossibleMoves(Board board, GridPane gridPane) {
+        Field[][] b = board.getBoard();
+        for (int i = 0; i < 8; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (b[i][j].isPossible) {
+                    int[] arr = {i, j};
+                    gridPane.getChildren().add(drawPoint(i,j));
+                }
+            }
+        }
+    }
+
+
+
+    public void drawArrow(String a, String b, int fieldsize, Board board, GridPane gridPane, int arrowID) {
         double x1, y1;
         double x2, y2;
 
         int[] firstCoordinate = board.NameToCoordinate(a);
         int[] secondCoordinate = board.NameToCoordinate(b);
 
-        x1 = firstCoordinate[1] * FIELDSIZE + 50;
-        y1 = firstCoordinate[0] * FIELDSIZE + 50;
-        x2 = secondCoordinate[1] * FIELDSIZE + 50;
-        y2 = secondCoordinate[0] * FIELDSIZE + 50;
+        x1 = firstCoordinate[1] * fieldsize + 50;
+        y1 = firstCoordinate[0] * fieldsize + 50;
+        x2 = secondCoordinate[1] * fieldsize + 50;
+        y2 = secondCoordinate[0] * fieldsize + 50;
 
         Line line = new Line();
 
@@ -80,8 +115,6 @@ public class DrawOnBoard {
         arrowHead.setMouseTransparent(true);
         arrowHead.setManaged(false);
         arrowHead.setOpacity(0.3);
-
-        arrowID++;
         gridPane.getChildren().addAll(line, arrowHead);
     }
      

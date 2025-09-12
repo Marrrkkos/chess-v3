@@ -82,6 +82,7 @@ public class Knight extends Piece{
     public int getID() {
         return 3;
     }
+
     @Override
     public void  setHasMoved() {
 

@@ -19,12 +19,15 @@ public class Main extends Application {
     }
     //TODO
     //  Sounds
+    //  improve Forward/Backward Button
     //  improve ListView interaction
     //  BrettNotation
     //  Same window
     //  Window Size
     //  move Training Animation
-    //  BugFixes
+    //  Fix LANGUAGE
+    //  connect to Opening Database
+
     public static void main(String[] args) {
         launch();
     }

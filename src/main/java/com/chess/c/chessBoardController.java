@@ -118,6 +118,8 @@ public class chessBoardController implements Serializable {
                 count++;
                 player.Colour = !player.Colour;
             }
+            drawOnBoard.removeAllCircles(gridPane);
+            possibleBoard.clearBoard();
             drawOnBoard.drawPieces(board,buttonArray,rotation);
             repaintArrows();
         }
@@ -139,7 +141,7 @@ public class chessBoardController implements Serializable {
                 count++;
                 player.Colour = !player.Colour;
             }
-            removeAllCircles();
+            drawOnBoard.removeAllCircles(gridPane);
             possibleBoard.clearBoard();
             drawOnBoard.drawPieces(board,buttonArray,rotation);
             repaintArrows();
@@ -165,6 +167,8 @@ public class chessBoardController implements Serializable {
             player.Colour = !player.Colour;
             count++;
         }
+        drawOnBoard.removeAllCircles(gridPane);
+        possibleBoard.clearBoard();
         drawOnBoard.drawPieces(board,buttonArray,rotation);
         repaintArrows();
     }
@@ -200,8 +204,10 @@ public class chessBoardController implements Serializable {
                 }
 
                 if (node1 instanceof Line || node1 instanceof Polygon) {
+                    node1.setMouseTransparent(false);
                     for (Node node : gridPane.getChildren()) {
                         if (node instanceof Line line1) {
+                            System.out.println(line1.getId() + " + " + countID);
                             if (Objects.equals(line1.getId(), "" + countID)) {
                                 line = line1;
                             }
@@ -213,8 +219,6 @@ public class chessBoardController implements Serializable {
                             }
                         }
                     }
-                    line.setMouseTransparent(false);
-                    polygon.setMouseTransparent(false);
                     Line finalLine = line;
                     Polygon finalPolygon = polygon;
 
@@ -277,17 +281,37 @@ public class chessBoardController implements Serializable {
                         finalPolygon.setOpacity(0.3);
                     });
                     polygon.setOnMouseClicked(mouseEvent -> {
-                        int startX = (int) finalLine.getStartX() / 100;
-                        int startY = (int) (finalLine.getStartY()) / 100;
-                        String m1 = buttonArray[startY][startX].getId();
-                        System.out.println("Start: " + buttonArray[startY][startX].getId());
-                        int endX = (int) finalLine.getEndX() / 100;
-                        int endY = (int) (finalLine.getEndY()-100) / 100;
-                        String m2 = buttonArray[endY][endX].getId();
-                        System.out.println("endX: " + endX + "endY: " + endY);
-                        System.out.println("End: " + buttonArray[endY][endX].getId());
+                        String m1;
+                        String m2;
+                        if(player.Colour) {
+                            System.out.println(finalLine.getStartX() + " " + finalLine.getStartY() + " " + finalLine.getEndX() + " " + finalLine.getEndY());
+                            int startX = (int) finalLine.getStartX() / 100;
+                            int startY = (int) (finalLine.getStartY()) / 100;
+                            m1 = buttonArray[startY][startX].getId();
+                            System.out.println("Start: " + buttonArray[startY][startX].getId());
+                            int endX = (int) finalLine.getEndX() / 100;
+                            int endY = (int) (finalLine.getEndY() - 55) / 100;      //-55 wegen arrowSize
+                            m2 = buttonArray[endY][endX].getId();
 
-                        areYouSure(m1, m2);
+                            System.out.println("endX: " + endX + "endY: " + endY);
+                            System.out.println("End: " + buttonArray[endY][endX].getId());
+                        }else {
+                            System.out.println(finalLine.getStartX() + " " + finalLine.getStartY() + " " + finalLine.getEndX() + " " + finalLine.getEndY());
+                            int startX = (int) finalLine.getStartX() / 100;
+                            int startY = (int) (finalLine.getStartY()) / 100;
+                            m1 = buttonArray[startY][startX].getId();
+                            System.out.println("Start: " + buttonArray[startY][startX].getId());
+                            int endX = (int) finalLine.getEndX() / 100;
+                            int endY = (int) (finalLine.getEndY() + 50) / 100;
+                            m2 = buttonArray[endY][endX].getId();
+
+                            System.out.println("endX: " + endX + "endY: " + endY);
+                            System.out.println("End: " + buttonArray[endY][endX].getId());
+
+                        }
+
+
+                        areYouSure(m1,m2);
                     });
                     countID++;
                 }
@@ -303,7 +327,7 @@ public class chessBoardController implements Serializable {
     }
     private void repaintArrows(){
         ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
-        removeAllArrows();
+        drawOnBoard.removeAllArrows(gridPane);
         drawAllArrows(nextMoves);
         while(!openingsView.getItems().isEmpty()) {
             openingsView.getItems().removeLast();
@@ -508,14 +532,14 @@ public class chessBoardController implements Serializable {
                             m2 = buttonArray[yPos][xPos].getId();
                             //Selbe Farbe → Neue Figur ausgewählt
                             if (board.hasPiece(m2) && board.getPieceColour(m1) == board.getPieceColour(m2)) {
-                                removeAllCircles();
+                                drawOnBoard.removeAllCircles(gridPane);
                                 m1 = button.getId();
                                 if (board.hasPiece(m1) && player.Colour == board.getPieceColour(m1)) {
 
                                     possibleBoard = board.getPossible(m1, Zuege);
 
                                     if (possibleBoard.Possibles()) {
-                                        drawWPossible();
+                                        drawOnBoard.drawAllPossibleMoves(board, gridPane);
 
                                         Node graphic = button.getGraphic();
                                         if (graphic instanceof ImageView) {
@@ -551,7 +575,7 @@ public class chessBoardController implements Serializable {
                                     promoteYPos = yPos;
                                     showPromotion(xPos, yPos, player.Colour);
                                     dragImageView.setVisible(false);
-                                    removeAllCircles();
+                                    drawOnBoard.removeAllCircles(gridPane);
                                 } else {
                                         notationHandler.setAll(m1,m2,board.getPiece(m1), board.getPiece(m2));
                                         x = board.doMove(m1, m2, Zuege);
@@ -572,7 +596,7 @@ public class chessBoardController implements Serializable {
 
                                 }
                                 possibleBoard.clearBoard();
-                                removeAllCircles();
+                                drawOnBoard.removeAllCircles(gridPane);
 
                             }
                         } else {
@@ -583,7 +607,7 @@ public class chessBoardController implements Serializable {
                                 possibleBoard = board.getPossible(m1, Zuege);
 
                                 if (possibleBoard.Possibles()) {
-                                    drawWPossible();
+                                    drawOnBoard.drawAllPossibleMoves(board, gridPane);
 
                                     // Drag-Bild initialisieren
                                     Node graphic = button.getGraphic();
@@ -690,7 +714,7 @@ public class chessBoardController implements Serializable {
                             promoteYPos = yPos;
                             showPromotion(xPos, yPos, player.Colour);
                             dragImageView.setVisible(false);
-                            removeAllCircles();
+                            drawOnBoard.removeAllCircles(gridPane);
 
                         } else if (board.doMove(m1, m2, Zuege)) {
                             playerMove1 = m1;
@@ -700,7 +724,7 @@ public class chessBoardController implements Serializable {
                             dragImageView.setVisible(false);                                                 //<---
                             m1 = "";
                             m2 = "";
-                            removeAllCircles();
+                            drawOnBoard.removeAllCircles(gridPane);
 
                             if(trainingActive){
                                 trainingsModus();
@@ -811,7 +835,7 @@ public class chessBoardController implements Serializable {
             nextTurn(0);
             m1 = "";
             m2 = "";
-            removeAllCircles();
+            drawOnBoard.removeAllCircles(gridPane);
         }
         if(currentTrainingsLine.isEmpty()){
             board.resetPieces();
@@ -850,6 +874,8 @@ public class chessBoardController implements Serializable {
         drawOnBoard.drawPieces(board,buttonArray,rotation);
         count = 0;
         repaintArrows();
+        drawOnBoard.removeAllCircles(gridPane);
+        possibleBoard.clearBoard();
     }
     private int doPromotion(Button button, int xPosButton, int yPosButton, boolean colour){
         int x = 0;
@@ -1040,24 +1066,18 @@ public class chessBoardController implements Serializable {
     }
 
     public void drawAllArrows(ArrayList<Turn> Zuege){
+        int arrowID = 0;
         for(Turn turn: Zuege){
             if(turn.b1.contains("=")) {
-                drawOnBoard.drawArrow(turn.a1, turn.b1.substring(0, 2),FIELDSIZE, board, gridPane);
+                drawOnBoard.drawArrow(turn.a1, turn.b1.substring(0, 2),FIELDSIZE, board, gridPane, arrowID);
             }else{
-                drawOnBoard.drawArrow(turn.a1, turn.b1, FIELDSIZE, board, gridPane);
+                drawOnBoard.drawArrow(turn.a1, turn.b1, FIELDSIZE, board, gridPane, arrowID);
             }
+            arrowID++;
         }
         arrowID = 0;
     }
-    int arrowID = 0;
-    public void removeAllArrows() {
-        // Filtern und alle Lines entfernen
-        gridPane.getChildren().removeIf(node -> node instanceof Line);
-        gridPane.getChildren().removeIf(node -> node instanceof Polygon);
-    }
-    private void removeAllCircles(){
-        gridPane.getChildren().removeIf(node -> node instanceof Circle);
-    }
+
     private void manageMoveView(String a){
         if(player.Colour){
             movesView.getItems().add(count/2, (count + 2) / 2 + ".  " + a);
@@ -1069,31 +1089,6 @@ public class chessBoardController implements Serializable {
     }
     private void resetMoveView(){
         movesView.getItems().clear();
-    }
-
-
-    private Circle drawPoint(double i, double j){
-        Circle circle = new Circle();
-        circle.setCenterX(j*100+50);
-        circle.setCenterY(i*100+50);
-        circle.setManaged(false);
-        circle.setRadius(12);
-        circle.setOpacity(0.8);
-        circle.setFill(Color.GRAY);
-        circle.setMouseTransparent(true);
-
-        return circle;
-    }
-    private void drawWPossible() {
-        Field[][] b = board.getBoard();
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (b[i][j].isPossible) {
-                    int[] arr = {i, j};
-                    gridPane.getChildren().add(drawPoint(i,j));
-                }
-            }
-        }
     }
 
 }

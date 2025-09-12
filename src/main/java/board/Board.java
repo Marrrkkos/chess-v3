@@ -157,105 +157,104 @@ public class Board{
             Piece piece = Brett[pos1[0]][pos1[1]].piece.getPiece();
             if(piece.canMove(pos1,pos2,Brett, Zuege)){
 
-                // EnPasant
-                if(piece.getID() == 1 && (pos1[0] == 3 || pos1[0] == 4)){
-                    int x1 = pos1[0];       // First Coordinate
-                    int y1 = pos1[1];
+                doEnpasant(piece,pos1,pos2,Zuege);
 
-                    int x2 = pos2[0];       // First Coordinate
-                    int y2 = pos2[1];
-
-
-
-                    String t = Zuege.get(Zuege.getLast().getID()).a1;
-                    String s = Zuege.get(Zuege.getLast().getID()).b1;
-
-                    int[] arr = NameToCoordinate(t);
-                    int[] arr1 = NameToCoordinate(s);
-
-                    int r1 = arr[0];
-                    int s1 = arr[1];
-
-                    int r2 = arr1[0];
-                    int s2 = arr[1];
-
-
-                    if(piece.getColour()) {
-                        if(y1 == 0) {
-                            if (((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1 + 1][x1-1].name.equals(Brett[y2][x2].name)) {
-                                Brett[x1 - 1][y1 + 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1+1].piece = null;
-                            }
-                        }else if(y1 == 7){
-                            if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1 - 1][x1 - 1].name.equals(Brett[y2][x2].name)) {
-                                Brett[x1 - 1][y1 - 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1-1].piece = null;
-                            }
-                        }else {
-                            if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1-1].name.equals(Brett[y2][x2].name)) {
-                                Brett[x1 - 1][y1 - 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1-1].piece = null;
-                            }else if((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 + 1].name.equals(Brett[r1][s1].name)) && Brett[y1+1][x1-1].name.equals(Brett[y2][x2].name)){
-                                Brett[x1 - 1][y1 + 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1+1].piece = null;
-                            }
-                        }
-                    }else{
-                        if(y1 == 0) {
-                            if (((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1+1][x1+1].name.equals(Brett[y2][x2].name)) {
-                                Brett[x1 + 1][y1 + 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1+1].piece = null;
-                            }
-                        }else if(y1 == 7){
-                            if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1 + 1].name.equals(Brett[y2][x2].name)) {
-                                Brett[x1 + 1][y1 - 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1-1].piece = null;
-                            }
-                        }else {
-                            if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1 + 1].name.equals(Brett[y2][x2].name)) {
-                                Brett[x1 + 1][y1 - 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1-1].piece = null;
-                            }else if(((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1+1][x1 + 1].name.equals(Brett[y2][x2].name)){
-                                Brett[x1 + 1][y1 + 1].piece = Brett[x1][y1].piece;
-                                Brett[x1][y1+1].piece = null;
-                            }
-                        }
-                    }
-                }
-
-
-
-
-
-                //Short Castle
-                if (((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) && getPiece(a).getID() == 6) {
-                    Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
-                    Brett[pos1[0]][pos1[1]].piece = null;
-
-                    Brett[pos1[0]][pos1[1] + 1].piece = Brett[pos1[0]][pos1[1] + 3].piece;
-                    Brett[pos1[0]][pos1[1] + 3].piece = null;
-
-                    //Long Castle
-                } else if (((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) && getPiece(a).getID() == 6) {
-                    Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
-                    Brett[pos1[0]][pos1[1]].piece = null;
-
-                    Brett[pos1[0]][pos1[1] - 1].piece = Brett[pos1[0]][pos1[1] - 4].piece;
-                    Brett[pos1[0]][pos1[1] - 4].piece = null;
-
-                } else {
-                    Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
-                    Brett[pos1[0]][pos1[1]].piece = null;
-                }
-
+                doCastle(a, b, pos1, pos2);
 
             }
 
         }
-        if(Brett[pos2[0]][pos2[1]].piece.getID() == 6 || Brett[pos2[0]][pos2[1]].piece.getID() == 2 || Brett[pos2[0]][pos2[1]].piece.getID() == 1){   // Rook King (Castle) and Pawn (EnPasant)
-            Brett[pos2[0]][pos2[1]].piece.setHasMoved();
-        }
+
+        Brett[pos2[0]][pos2[1]].piece.setHasMoved();
+
         return true;
+    }
+    public void doCastle(String a, String b, int[] pos1, int[] pos2){
+        if (((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) && getPiece(a).getID() == 6) {
+            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+            Brett[pos1[0]][pos1[1]].piece = null;
+
+            Brett[pos1[0]][pos1[1] + 1].piece = Brett[pos1[0]][pos1[1] + 3].piece;
+            Brett[pos1[0]][pos1[1] + 3].piece = null;
+
+            //Long Castle
+        } else if (((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) && getPiece(a).getID() == 6) {
+            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+            Brett[pos1[0]][pos1[1]].piece = null;
+
+            Brett[pos1[0]][pos1[1] - 1].piece = Brett[pos1[0]][pos1[1] - 4].piece;
+            Brett[pos1[0]][pos1[1] - 4].piece = null;
+
+        } else {
+            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+            Brett[pos1[0]][pos1[1]].piece = null;
+        }
+    }
+    public void doEnpasant(Piece piece,int[] pos1, int[] pos2, ArrayList<Turn> Zuege){
+        if(piece.getID() == 1 && (pos1[0] == 3 || pos1[0] == 4)){
+            int x1 = pos1[0];       // First Coordinate
+            int y1 = pos1[1];
+
+            int x2 = pos2[0];       // First Coordinate
+            int y2 = pos2[1];
+
+
+
+            String t = Zuege.get(Zuege.getLast().getID()).a1;
+            String s = Zuege.get(Zuege.getLast().getID()).b1;
+
+            int[] arr = NameToCoordinate(t);
+            int[] arr1 = NameToCoordinate(s);
+
+            int r1 = arr[0];
+            int s1 = arr[1];
+
+            int r2 = arr1[0];
+            int s2 = arr[1];
+
+
+            if(piece.getColour()) {
+                if(y1 == 0) {
+                    if (((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1 + 1][x1-1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 - 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }else if(y1 == 7){
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1 - 1][x1 - 1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 - 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }
+                }else {
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1-1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 - 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }else if((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 - 2][y1 + 1].name.equals(Brett[r1][s1].name)) && Brett[y1+1][x1-1].name.equals(Brett[y2][x2].name)){
+                        Brett[x1 - 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }
+            }else{
+                if(y1 == 0) {
+                    if (((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1+1][x1+1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 + 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }else if(y1 == 7){
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1 + 1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 + 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }
+                }else {
+                    if (((Brett[x1][y1 - 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 - 1].name.equals(Brett[r1][s1].name))) && Brett[y1-1][x1 + 1].name.equals(Brett[y2][x2].name)) {
+                        Brett[x1 + 1][y1 - 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1-1].piece = null;
+                    }else if(((Brett[x1][y1 + 1].name.equals(Brett[r2][s2].name)) && (Brett[x1 + 2][y1 + 1].name.equals(Brett[r1][s1].name))) && Brett[y1+1][x1 + 1].name.equals(Brett[y2][x2].name)){
+                        Brett[x1 + 1][y1 + 1].piece = Brett[x1][y1].piece;
+                        Brett[x1][y1+1].piece = null;
+                    }
+                }
+            }
+        }
     }
     public Boolean checkPromotion(String a, String b) {
         int[] pos1 = NameToCoordinate(a);
