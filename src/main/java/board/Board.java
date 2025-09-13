@@ -159,7 +159,11 @@ public class Board{
 
                 doEnpasant(piece,pos1,pos2,Zuege);
 
-                doCastle(a, b, pos1, pos2);
+                if(doCastle(a, b, pos1, pos2)){
+                    Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
+                    Brett[pos1[0]][pos1[1]].piece = null;
+                }
+
 
             }
 
@@ -169,14 +173,14 @@ public class Board{
 
         return true;
     }
-    public void doCastle(String a, String b, int[] pos1, int[] pos2){
+    public boolean doCastle(String a, String b, int[] pos1, int[] pos2){
         if (((a.equals("e1") && b.equals("g1")) || (a.equals("e8") && b.equals("g8"))) && getPiece(a).getID() == 6) {
             Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
             Brett[pos1[0]][pos1[1]].piece = null;
 
             Brett[pos1[0]][pos1[1] + 1].piece = Brett[pos1[0]][pos1[1] + 3].piece;
             Brett[pos1[0]][pos1[1] + 3].piece = null;
-
+            return false;
             //Long Castle
         } else if (((a.equals("e1") && b.equals("c1")) || (a.equals("e8") && b.equals("c8"))) && getPiece(a).getID() == 6) {
             Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
@@ -184,11 +188,9 @@ public class Board{
 
             Brett[pos1[0]][pos1[1] - 1].piece = Brett[pos1[0]][pos1[1] - 4].piece;
             Brett[pos1[0]][pos1[1] - 4].piece = null;
-
-        } else {
-            Brett[pos2[0]][pos2[1]].piece = Brett[pos1[0]][pos1[1]].piece;
-            Brett[pos1[0]][pos1[1]].piece = null;
+            return false;
         }
+        return true;
     }
     public void doEnpasant(Piece piece,int[] pos1, int[] pos2, ArrayList<Turn> Zuege){
         if(piece.getID() == 1 && (pos1[0] == 3 || pos1[0] == 4)){

@@ -54,68 +54,32 @@ public class  King extends Piece {
         return this.colour;
     }
     @Override
-    public Field[][] possibleFields(int[] pos1, Field[][] Brett, ArrayList<Turn> Zuege) {
-        int x1 = pos1[0];       // First Coordinate
+    public Field[][] possibleFields(int[] pos1, Field[][] board, ArrayList<Turn> moves) {
+        int x1 = pos1[0];
         int y1 = pos1[1];
-        if(Brett[x1][y1].piece.getColour()) {
-            if ((x1 != 0 && y1 != 0) && (Brett[x1 - 1][y1 - 1].piece == null || !Brett[x1 - 1][y1 - 1].piece.getColour())) {
-                Brett[x1 - 1][y1 - 1].isPossible = true;
-            }
-            if ((x1 != 0) && (Brett[x1 - 1][y1].piece == null || !Brett[x1 - 1][y1].piece.getColour())) {
-                Brett[x1 - 1][y1].isPossible = true;
-            }
-            if ((x1 != 0 && y1 != 7) && (Brett[x1 - 1][y1 + 1].piece == null || !Brett[x1 - 1][y1 + 1].piece.getColour())) {
-                Brett[x1 - 1][y1 + 1].isPossible = true;
-            }
+        boolean isWhite = board[x1][y1].piece.getColour(); // true = Weiß
 
-            if ((y1 != 0) && (Brett[x1][y1 - 1].piece == null || !Brett[x1][y1 - 1].piece.getColour())) {
-                Brett[x1][y1 - 1].isPossible = true;
-            }
-            if ((y1 != 7) && (Brett[x1][y1 + 1].piece == null || !Brett[x1][y1 + 1].piece.getColour())) {
-                Brett[x1][y1 + 1].isPossible = true;
-            }
+        // all directions
+        int[][] directions = {{-1, -1}, {-1, 0}, {-1, 1}, { 0, -1}, { 0, 1}, { 1, -1}, { 1, 0}, { 1, 1}};
 
-            if ((x1 != 7 && y1 != 0) && (Brett[x1 + 1][y1 - 1].piece == null || !Brett[x1 + 1][y1 - 1].piece.getColour())) {
-                Brett[x1 + 1][y1 - 1].isPossible = true;
-            }
-            if ((x1 != 7) && (Brett[x1 + 1][y1].piece == null || !Brett[x1 + 1][y1].piece.getColour())) {
-                Brett[x1 + 1][y1].isPossible = true;
-            }
-            if ((x1 != 7 && y1 != 7) && (Brett[x1 + 1][y1 + 1].piece == null || !Brett[x1 + 1][y1 + 1].piece.getColour())) {
-                Brett[x1 + 1][y1 + 1].isPossible = true;
-            }
-        }else{
-            if ((x1 != 0 && y1 != 0) && (Brett[x1 - 1][y1 - 1].piece == null || Brett[x1 - 1][y1 - 1].piece.getColour())) {
-                Brett[x1 - 1][y1 - 1].isPossible = true;
-            }
-            if ((x1 != 0) && (Brett[x1 - 1][y1].piece == null || Brett[x1 - 1][y1].piece.getColour())) {
-                Brett[x1 - 1][y1].isPossible = true;
-            }
-            if ((x1 != 0 && y1 != 7) && (Brett[x1 - 1][y1 + 1].piece == null || Brett[x1 - 1][y1 + 1].piece.getColour())) {
-                Brett[x1 - 1][y1 + 1].isPossible = true;
-            }
+        for (int[] dir : directions) {
+            int dirX = x1 + dir[0];
+            int dirY = y1 + dir[1];
 
-            if ((y1 != 0) && (Brett[x1][y1 - 1].piece == null || Brett[x1][y1 - 1].piece.getColour())) {
-                Brett[x1][y1 - 1].isPossible = true;
-            }
-            if ((y1 != 7) && (Brett[x1][y1 + 1].piece == null || Brett[x1][y1 + 1].piece.getColour())) {
-                Brett[x1][y1 + 1].isPossible = true;
-            }
+            if (isInBounds(dirX, dirY)) {
+                Piece targetPiece = board[dirX][dirY].piece;
 
-            if ((x1 != 7 && y1 != 0) && (Brett[x1 + 1][y1 - 1].piece == null || Brett[x1 + 1][y1 - 1].piece.getColour())) {
-                Brett[x1 + 1][y1 - 1].isPossible = true;
-            }
-            if ((x1 != 7) && (Brett[x1 + 1][y1].piece == null || Brett[x1 + 1][y1].piece.getColour())) {
-                Brett[x1 + 1][y1].isPossible = true;
-            }
-            if ((x1 != 7 && y1 != 7) && (Brett[x1 + 1][y1 + 1].piece == null || Brett[x1 + 1][y1 + 1].piece.getColour())) {
-                Brett[x1 + 1][y1 + 1].isPossible = true;
+                if (targetPiece == null || targetPiece.getColour() != isWhite) {
+                    board[dirX][dirY].isPossible = true;
+                }
             }
         }
-        if(!this.hasMoved) {
-            checkCastle(pos1, Brett);
+
+        if (!this.hasMoved) {
+            checkCastle(pos1, board);
         }
-        return Brett;
+
+        return board;
     }
     private boolean checkCastle(int[] pos1, Field[][] Brett){
         int x1 = pos1[0];       // First Coordinate

@@ -3,6 +3,7 @@ module com.chess.c {
     requires javafx.fxml;
     requires java.desktop;
     requires javafx.graphics;
+    requires javafx.base;
 
 
     opens com.chess.c to javafx.fxml;

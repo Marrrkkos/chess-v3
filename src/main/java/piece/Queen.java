@@ -54,13 +54,13 @@ public class  Queen extends Piece {
         int x1 = pos1[0];
         int y1 = pos1[1];
 
-        // Rook Bewegungen
+        // Rook
         exploreLine(x1, y1, 1, 0, Brett);
         exploreLine(x1, y1, -1, 0, Brett);
         exploreLine(x1, y1, 0, 1, Brett);
         exploreLine(x1, y1, 0, -1, Brett);
 
-        // Bishop Bewegungen
+        // Bishop
         exploreLine(x1, y1, 1, 1, Brett);
         exploreLine(x1, y1, 1, -1, Brett);
         exploreLine(x1, y1, -1, 1, Brett);
@@ -69,15 +69,15 @@ public class  Queen extends Piece {
         return Brett;
     }
 
-    private void exploreLine(int startX, int startY, int dx, int dy, Field[][] Brett) {
-        int currX = startX + dx;
-        int currY = startY + dy;
+    private void exploreLine(int startX, int startY, int dirX, int dirY, Field[][] Brett) {
+        int currX = startX + dirX;
+        int currY = startY + dirY;
 
         while (isInBounds(currX, currY)) {
             Field currentField = Brett[currX][currY];
 
             if (currentField.piece != null) {
-                if (currentField.piece.getColour() != Brett[startX][startY].piece.getColour()) {
+                if (currentField.piece.getColour() != Brett[startX][startY].piece.getColour()) {        // Cant capture own colour
                     currentField.isPossible = true;
                 }
                 break;
@@ -85,14 +85,11 @@ public class  Queen extends Piece {
 
             currentField.isPossible = true;
 
-            currX += dx;
-            currY += dy;
+            currX += dirX;
+            currY += dirY;
         }
     }
 
-    private boolean isInBounds(int x, int y) {
-        return x >= 0 && x < 8 && y >= 0 && y < 8;
-    }
     @Override
     public int getID() {
         return 5;

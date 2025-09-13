@@ -117,21 +117,10 @@ public class MoveTree implements Serializable {
                 }
             }
     }
-    public void traverseLevelOrder() {
 
-        List<Knoten> aktuelleEbene = new ArrayList<>();
-        aktuelleEbene.add(Wurzel);
-
-        while (!aktuelleEbene.isEmpty()) {
-            List<Knoten> naechsteEbene = new ArrayList<>();
-            for (Knoten knoten : aktuelleEbene) {
-                System.out.print(knoten.turn + " ");
-                naechsteEbene.addAll(knoten.getChildren());
-            }
-            System.out.println(); // Zeilenumbruch für die nächste Ebene
-            aktuelleEbene = naechsteEbene;
-        }
-    }
+    /**
+     * Gets all Saved Moves
+     */
     public ArrayList<Turn> getCurrentChildren(ArrayList<Turn> Zuege){
         ArrayList<Turn> possibleMoves = new ArrayList<>();
         Knoten knoten = Wurzel;
@@ -165,6 +154,10 @@ public class MoveTree implements Serializable {
         return String.join("\n", pfade);
     }
 
+    /**
+     * Creates every Line from root to end. Its a method for the Training-aspect of this program
+     * @return all saved Lines in List form, so you can play vs the bot to train this opening
+     */
     public List<ArrayList<Knoten>> erstellePfade() {
         return erstellePfadeIterativ(this.Wurzel);
     }
@@ -173,28 +166,23 @@ public class MoveTree implements Serializable {
         List<ArrayList<Knoten>> pfade = new ArrayList<>(); // Liste aller Pfade
 
         if (wurzel == null) {
-            return pfade; // Leere Liste, wenn die Wurzel null ist
+            return pfade;
         }
 
-        // Stack zur Speicherung von Knoten und dem dazugehörigen aktuellen Pfad
         Stack<Pair<Knoten, ArrayList<Knoten>>> stack = new Stack<>();
 
-        // Die Wurzel mit einem initialen Pfad auf den Stack legen
         ArrayList<Knoten> startPfad = new ArrayList<>();
         startPfad.add(wurzel);
         stack.push(new Pair<>(wurzel, startPfad));
 
-        // Iteration durch den Baum
         while (!stack.isEmpty()) {
-            Pair<Knoten, ArrayList<Knoten>> aktuellesElement = stack.pop();
-            Knoten aktuellerKnoten = aktuellesElement.getKey();
-            ArrayList<Knoten> aktuellerPfad = aktuellesElement.getValue();
+            Pair<Knoten, ArrayList<Knoten>> currentElement = stack.pop();
+            Knoten aktuellerKnoten = currentElement.getKey();
+            ArrayList<Knoten> aktuellerPfad = currentElement.getValue();
 
-            // Wenn der aktuelle Knoten ein Blatt ist, zum Ergebnis hinzufügen
             if (aktuellerKnoten.getChildren().isEmpty()) {
                 pfade.add(aktuellerPfad);
             } else {
-                // Alle Kinder des aktuellen Knotens durchlaufen
                 for (Knoten kind : aktuellerKnoten.getChildren()) {
                     ArrayList<Knoten> neuerPfad = new ArrayList<>(aktuellerPfad);
                     neuerPfad.add(kind);

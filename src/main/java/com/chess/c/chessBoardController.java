@@ -341,11 +341,9 @@ public class chessBoardController implements Serializable {
         StackPane overlayPane = new StackPane();
         overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);"); // Transparenter Hintergrund
 
-// Inhalt des Overlay-Panes
         VBox overlayContent = new VBox(10); // VBox für besseren Abstand
         overlayContent.setAlignment(Pos.CENTER);
 
-// Label und Buttons
         Label label = new Label("Sicher?");
         Button button1 = new Button("Yes");
         Button button2 = new Button("No");
@@ -372,20 +370,16 @@ public class chessBoardController implements Serializable {
         button1.setPrefWidth(80);
         button2.setPrefWidth(80);
 
-// Buttons in einer HBox anordnen
         HBox buttonBox = new HBox(10); // Abstand zwischen den Buttons
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.getChildren().addAll(button1, button2);
 
-// Overlay-Inhalt zusammenstellen
         overlayContent.getChildren().addAll(label, buttonBox);
         overlayPane.getChildren().add(overlayContent);
 
-// Größe und Platzierung des Overlay-Panes
         overlayPane.setPrefSize(300, 200); // Feste Größe für das Overlay
         overlayPane.setVisible(true);
 
-// Overlay zum AnchorPane hinzufügen
         anchorPane.getChildren().add(overlayPane);
         AnchorPane.setTopAnchor(overlayPane, 0.0);
         AnchorPane.setBottomAnchor(overlayPane, 0.0);

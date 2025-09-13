@@ -75,9 +75,6 @@ public class Knight extends Piece{
         return Brett;
     }
 
-    private boolean isInBounds(int x, int y) {
-        return x >= 0 && x < 8 && y >= 0 && y < 8;
-    }
     @Override
     public int getID() {
         return 3;
