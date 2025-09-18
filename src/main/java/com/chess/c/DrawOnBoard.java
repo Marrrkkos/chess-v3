@@ -7,8 +7,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
 
 public class DrawOnBoard {
     public void drawPieces(Board board, Button[][] buttonArray, int rotation) {
@@ -48,15 +46,9 @@ public class DrawOnBoard {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (b[i][j].isPossible) {
-                    int[] arr = {i, j};
                     gridPane.getChildren().add(drawPoint(i,j));
                 }
             }
         }
     }
-
-
-
-
-     
 }

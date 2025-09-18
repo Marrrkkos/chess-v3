@@ -23,4 +23,5 @@ public class MoveLists {
             openingsView.getItems().add(notationHandler.handleNotation());
         }
     }
+
 }

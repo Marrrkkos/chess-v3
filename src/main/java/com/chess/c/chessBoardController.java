@@ -60,14 +60,13 @@ public class chessBoardController implements Serializable {
     @FXML
     ToggleButton removeButton;
     @FXML
-            Button saveButton;
+    Button saveButton;
     @FXML
-            Button rotateButton;
+    Button rotateButton;
 
     ArrayList<Turn> Zuege = new ArrayList<>();
     ArrayList<Turn> ZuegeSpeicher = new ArrayList<>();
     Player player = new Player(true);
-
     Board board = new Board(new Field[8][8]);
     Board possibleBoard = new Board(new Field[8][8]);
 
@@ -76,13 +75,11 @@ public class chessBoardController implements Serializable {
     // Global MoveCheckers
     String m1 = "";
     String m2 = "";
-    String moveView = "";
-
+    MovesView movesViewHandler = new MovesView();
     DrawOnBoard drawOnBoard = new DrawOnBoard();
-    Boolean promotion = false;
 
     String chosenOpening = "";
-    private Button[][] buttonArray = new Button[8][8];
+    private final Button[][] buttonArray = new Button[8][8];
 
 
     private Stage stage;
@@ -104,7 +101,7 @@ public class chessBoardController implements Serializable {
     @FXML
     public void setForwardButton(){
         if((ZuegeSpeicher.size()>Zuege.size())) {
-            resetMoveView();
+            movesViewHandler.resetMoveView(movesView);
             player.Colour = true;
             board.resetPieces();
             Turn a = ZuegeSpeicher.get(Zuege.size());
@@ -114,7 +111,7 @@ public class chessBoardController implements Serializable {
                 notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
                 board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count-1);
                 notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
-                manageMoveView(notationHandler.handleNotation());
+                movesViewHandler.manageMoveView(notationHandler.handleNotation(), count, player.Colour, movesView);
                 count++;
                 player.Colour = !player.Colour;
             }
@@ -127,7 +124,7 @@ public class chessBoardController implements Serializable {
     @FXML
     public void setBackwardButton(){
         if(!Zuege.isEmpty()) {
-            resetMoveView();
+            movesViewHandler.resetMoveView(movesView);
             board.resetPieces();
             Zuege.removeLast();
             count=0;
@@ -137,7 +134,7 @@ public class chessBoardController implements Serializable {
                 notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
                 board.doSimpleMove(turn.a1, turn.b1, player.Colour, Zuege, count-1);
                 notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
-                manageMoveView(notationHandler.handleNotation());
+                movesViewHandler.manageMoveView(notationHandler.handleNotation(), count, player.Colour, movesView);
                 count++;
                 player.Colour = !player.Colour;
             }
@@ -153,14 +150,14 @@ public class chessBoardController implements Serializable {
     }
     @FXML
     public void setToEndButton(){
-        resetMoveView();
+        movesViewHandler.resetMoveView(movesView);
         board.resetPieces();
         Zuege.clear();
         count=0;
         player.Colour = true;
         for (Turn turn : ZuegeSpeicher) {
             notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
-            manageMoveView(notationHandler.handleNotation());
+            movesViewHandler.manageMoveView(notationHandler.handleNotation(), count, player.Colour, movesView);
             board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher, count-1);
             notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
             Zuege.add(turn);
@@ -390,7 +387,7 @@ public class chessBoardController implements Serializable {
         if(!Zuege.isEmpty()) {
 
             moveTree.remove(Zuege);
-            resetMoveView();
+            movesViewHandler.resetMoveView(movesView);
             board.resetPieces();
             count=0;
             player.Colour = true;
@@ -398,7 +395,7 @@ public class chessBoardController implements Serializable {
                 notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
                 board.doSimpleMove(turn.a1, turn.b1, player.Colour, ZuegeSpeicher,count-1);
                 notationHandler.setCheckiChecks(board.checkiChecks(Zuege, board.getBoard(), player.Colour));
-                manageMoveView(notationHandler.handleNotation());
+                movesViewHandler.manageMoveView(notationHandler.handleNotation(), count, player.Colour, movesView);
                 count++;
                 player.Colour = !player.Colour;
             }
@@ -462,8 +459,13 @@ public class chessBoardController implements Serializable {
     int promoteXPos = 0;
     int promoteYPos = 0;
     Button previousButton;
+    Button[] trainingButtons;
     @FXML
     public void initialize() {
+
+        trainingButtons = new Button[] {
+                forwardButton, backwardButton, toStartButton, toEndButton, saveButton, rotateButton
+        };
 
         board.initializeBoard();
         ImageView dragImageView = new ImageView(); // Zum Anzeigen des Schachstücks beim Draggen
@@ -485,13 +487,14 @@ public class chessBoardController implements Serializable {
                 buttonArray[row][col] = button;
 
                 buttonArray[row][col].setOnMousePressed(mouseEvent -> {
-                    if(promotion){
+                    if(promotionHandler.promoted){
                         notationHandler.setAll(m1, m2, board.getPiece(m1),board.getPiece(m2));
-                        int a = doPromotion(button, promoteXPos,promoteYPos, player.Colour);
-                        notationHandler.addPromotion(writePromotion(a));
-                        if(promotion) {
+                        int a = promotionHandler.doPromotion(button,buttonArray, promoteXPos,promoteYPos, player.Colour, board, m1, m2);
+                        drawOnBoard.drawPieces(board,buttonArray,rotation);
+                        notationHandler.addPromotion(promotionHandler.writePromotion(a));
+                        if(promotionHandler.promoted) {
                             playerMove1 = m1;
-                            playerMove2 = m2 + "" + writePromotion(a);
+                            playerMove2 = m2 + "" + promotionHandler.writePromotion(a);
                             nextTurn(a);
                             if (trainingActive) {
                                 trainingsModus();
@@ -500,7 +503,7 @@ public class chessBoardController implements Serializable {
                         }
                         m1 = "";
                         m2 = "";
-                        promotion = false;
+                        promotionHandler.setPromotion(false);
                     }else {
                         if (!m1.isEmpty()) {
                             double mouseX = mouseEvent.getSceneX();
@@ -557,7 +560,7 @@ public class chessBoardController implements Serializable {
                                 if (board.checkPromotion(m1, m2)) {
                                     promoteXPos = xPos;
                                     promoteYPos = yPos;
-                                    showPromotion(xPos, yPos, player.Colour);
+                                    promotionHandler.showPromotion(xPos, yPos, player.Colour, buttonArray, rotation);
                                     dragImageView.setVisible(false);
                                     drawOnBoard.removeAllCircles(gridPane);
                                 } else {
@@ -665,7 +668,7 @@ public class chessBoardController implements Serializable {
                     if(previousButton != null) {
                         previousButton.setOpacity(1);
                     }
-                    if(!promotion) {
+                    if(!promotionHandler.promoted) {
                         double mouseX = mouseEvent.getSceneX();
                         double mouseY = mouseEvent.getSceneY();
                         int xPos, yPos;
@@ -696,7 +699,7 @@ public class chessBoardController implements Serializable {
                         }else if (board.checkPromotion(m1, m2)) {
                             promoteXPos = xPos;
                             promoteYPos = yPos;
-                            showPromotion(xPos, yPos, player.Colour);
+                            promotionHandler.showPromotion(xPos, yPos, player.Colour, buttonArray, rotation);
                             dragImageView.setVisible(false);
                             drawOnBoard.removeAllCircles(gridPane);
 
@@ -733,7 +736,7 @@ public class chessBoardController implements Serializable {
         }
         drawOnBoard.drawPieces(board,buttonArray,rotation);
     }
-
+    Training trainingHandler = new Training();
     @FXML
     public void training() {
         if(trainingsButton.isSelected()) {
@@ -744,7 +747,7 @@ public class chessBoardController implements Serializable {
                 currentTrainingsLine = knotenToTurns(moveTree.erstellePfade().getFirst());
                 currentTrainingsLine.removeFirst();
                 trainingActive = true;
-                trainingOnVisual();
+                trainingHandler.setTrainingOnVisual(trainingButtons);
                 if (!moveTree.getWurzelColour()) {
                     m1 = currentTrainingsLine.getFirst().a1;
                     possibleBoard = board.getPossible(m1, Zuege);
@@ -758,7 +761,7 @@ public class chessBoardController implements Serializable {
             }
         }else{
             trainingActive = false;
-            trainingOffVisual();
+            trainingHandler.setTrainingOffVisual(trainingButtons);
             restartGame();
             gridPane.setStyle("-fx-border-color: transparent; -fx-border-width: 10; -fx-border-insets: -10;");
         }
@@ -840,7 +843,7 @@ public class chessBoardController implements Serializable {
                 }
             }else {
                 trainingActive = false;
-                trainingOffVisual();
+                trainingHandler.setTrainingOffVisual(trainingButtons);
                 currentTrainingsLine.clear();
                 restartGame();
                 gridPane.setStyle("-fx-border-color: transparent; -fx-border-width: 10; -fx-border-insets: -10;");
@@ -851,7 +854,7 @@ public class chessBoardController implements Serializable {
 
     }
     private void restartGame(){
-        resetMoveView();
+        movesViewHandler.resetMoveView(movesView);
         board.resetPieces();
         player.Colour = true;
         Zuege.clear();
@@ -861,147 +864,7 @@ public class chessBoardController implements Serializable {
         drawOnBoard.removeAllCircles(gridPane);
         possibleBoard.clearBoard();
     }
-    private int doPromotion(Button button, int xPosButton, int yPosButton, boolean colour){
-        int x = 0;
-        if(colour) {
-            if (Objects.equals(button, buttonArray[yPosButton][xPosButton])) {
-                x = 1;
-            }else if (Objects.equals(button, buttonArray[yPosButton + 1][xPosButton])) {
-                x = 2;
-            }else if (Objects.equals(button, buttonArray[yPosButton + 2][xPosButton])) {
-                x = 4;
-            }else if (Objects.equals(button, buttonArray[yPosButton + 3][xPosButton])) {
-                x = 3;
-            }else{
-                promotion = false;
-            }
-            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 0");
-            buttonArray[yPosButton + 1][xPosButton].setStyle("-fx-background-radius: 0");
-            buttonArray[yPosButton + 2][xPosButton].setStyle("-fx-background-radius: 0");
-            buttonArray[yPosButton + 3][xPosButton].setStyle("-fx-background-radius: 0");
 
-
-        }else {
-            if (Objects.equals(button, buttonArray[yPosButton][xPosButton])) {
-                x = 1;
-            }else if (Objects.equals(button, buttonArray[yPosButton - 1][xPosButton])) {
-                x = 2;
-            }else if (Objects.equals(button, buttonArray[yPosButton - 2][xPosButton])) {
-                x = 4;
-            }else if (Objects.equals(button, buttonArray[yPosButton - 3][xPosButton])) {
-                x = 3;
-            }else{
-                promotion = false;
-            }
-            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 0");
-            buttonArray[yPosButton - 1][xPosButton].setStyle("-fx-background-radius: 0");
-            buttonArray[yPosButton - 2][xPosButton].setStyle("-fx-background-radius: 0");
-            buttonArray[yPosButton - 3][xPosButton].setStyle("-fx-background-radius: 0");
-
-        }
-        if(promotion) {
-            board.promotion(x, m1, m2);
-        }
-
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                buttonArray[i][j].setOpacity(1);
-            }
-        }
-        drawOnBoard.drawPieces(board,buttonArray,rotation);
-        return x;
-    }
-    private void showPromotion(int xPosButton, int yPosButton, boolean colour){
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                buttonArray[i][j].setOpacity(0.2);
-            }
-        }
-        Queen queen = new Queen(colour);
-        Rook rook = new Rook(colour, true);
-        Bishop bishop = new Bishop(colour);
-        Knight knight = new Knight(colour);
-
-        ImageView queenView = new ImageView(queen.getImage());
-        ImageView rookView = new ImageView(rook.getImage());
-        ImageView bishopView = new ImageView(bishop.getImage());
-        ImageView knightView = new ImageView(knight.getImage());
-
-        if(colour) {
-            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 90");
-            buttonArray[yPosButton + 1][xPosButton].setStyle("-fx-background-radius: 90");
-            buttonArray[yPosButton + 2][xPosButton].setStyle("-fx-background-radius: 90");
-            buttonArray[yPosButton + 3][xPosButton].setStyle("-fx-background-radius: 90");
-
-            buttonArray[yPosButton][xPosButton].setOpacity(1);
-            buttonArray[yPosButton + 1][xPosButton].setOpacity(1);
-            buttonArray[yPosButton + 2][xPosButton].setOpacity(1);
-            buttonArray[yPosButton + 3][xPosButton].setOpacity(1);
-
-            buttonArray[yPosButton][xPosButton].setGraphic(queenView);
-            buttonArray[yPosButton+1][xPosButton].setGraphic(rookView);
-            buttonArray[yPosButton+2][xPosButton].setGraphic(bishopView);
-            buttonArray[yPosButton+3][xPosButton].setGraphic(knightView);
-            if(rotation == 180){
-                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(180);
-                buttonArray[yPosButton + 1][xPosButton].getGraphic().setRotate(180);
-                buttonArray[yPosButton + 2][xPosButton].getGraphic().setRotate(180);
-                buttonArray[yPosButton + 3][xPosButton].getGraphic().setRotate(180);
-            }else{
-                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(0);
-                buttonArray[yPosButton + 1][xPosButton].getGraphic().setRotate(0);
-                buttonArray[yPosButton + 2][xPosButton].getGraphic().setRotate(0);
-                buttonArray[yPosButton + 3][xPosButton].getGraphic().setRotate(0);
-            }
-        }else{
-            buttonArray[yPosButton][xPosButton].setStyle("-fx-background-radius: 90");
-            buttonArray[yPosButton - 1][xPosButton].setStyle("-fx-background-radius: 90");
-            buttonArray[yPosButton - 2][xPosButton].setStyle("-fx-background-radius: 90");
-            buttonArray[yPosButton - 3][xPosButton].setStyle("-fx-background-radius: 90");
-
-            buttonArray[yPosButton][xPosButton].setOpacity(1);
-            buttonArray[yPosButton - 1][xPosButton].setOpacity(1);
-            buttonArray[yPosButton - 2][xPosButton].setOpacity(1);
-            buttonArray[yPosButton - 3][xPosButton].setOpacity(1);
-
-            buttonArray[yPosButton][xPosButton].setGraphic(queenView);
-            buttonArray[yPosButton-1][xPosButton].setGraphic(rookView);
-            buttonArray[yPosButton-2][xPosButton].setGraphic(bishopView);
-            buttonArray[yPosButton-3][xPosButton].setGraphic(knightView);
-            if(rotation == 180){
-                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(180);
-                buttonArray[yPosButton - 1][xPosButton].getGraphic().setRotate(180);
-                buttonArray[yPosButton - 2][xPosButton].getGraphic().setRotate(180);
-                buttonArray[yPosButton - 3][xPosButton].getGraphic().setRotate(180);
-            }else{
-                buttonArray[yPosButton][xPosButton].getGraphic().setRotate(0);
-                buttonArray[yPosButton - 1][xPosButton].getGraphic().setRotate(0);
-                buttonArray[yPosButton - 2][xPosButton].getGraphic().setRotate(0);
-                buttonArray[yPosButton - 3][xPosButton].getGraphic().setRotate(0);
-            }
-        }
-
-
-        promotion = true;
-    }
-    private void trainingOnVisual(){
-        removeButton.setDisable(true);
-        forwardButton.setDisable(true);
-        backwardButton.setDisable(true);
-        toStartButton.setDisable(true);
-        toEndButton.setDisable(true);
-        saveButton.setDisable(true);
-        rotateButton.setDisable(true);
-    }
-    private void trainingOffVisual(){
-        removeButton.setDisable(false);
-        forwardButton.setDisable(false);
-        backwardButton.setDisable(false);
-        toStartButton.setDisable(false);
-        toEndButton.setDisable(false);
-        saveButton.setDisable(false);
-        rotateButton.setDisable(false);
-    }
     private ArrayList<Turn> knotenToTurns(ArrayList<Knoten> c){
         ArrayList<Turn> b = new ArrayList<>();
         for(Knoten knoten : c){
@@ -1012,16 +875,17 @@ public class chessBoardController implements Serializable {
     NotationHandler notationHandler = new NotationHandler("", "", new Pawn(false, false), new Pawn(false, false), false);
     private void nextTurn(int p){
         String notationHandled = "";
-        if(promotion){
-            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, (m2 + "" + writePromotion(p)), notationHandled));
+        if(promotionHandler.promoted){
+            Zuege.add(count, new Turn(count, (count + 2) / 2, m1, (m2 + "" + promotionHandler.writePromotion(p)), notationHandled));
             notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
-            notationHandled = notationHandler.handleNotation();
-            manageMoveView(notationHandled);
+            movesViewHandler.manageMoveView(notationHandler.handleNotation(), count, player.Colour, movesView);
+
         }else {
             Zuege.add(count, new Turn(count, (count + 2) / 2, m1, m2, notationHandler.handleNotation()));
             notationHandler.setCheckiChecks(!board.checkiChecks(Zuege, board.getBoard(), !player.Colour));
-            notationHandled = notationHandler.handleNotation();
-            manageMoveView(notationHandled);
+
+            movesViewHandler.manageMoveView(notationHandler.handleNotation(), count, player.Colour, movesView);
+
         }
         player.Colour = !player.Colour;
         ZuegeSpeicher = (ArrayList<Turn>) Zuege.clone();
@@ -1039,29 +903,6 @@ public class chessBoardController implements Serializable {
         }
         drawOnBoard.drawPieces(board, buttonArray, rotation);
     }
-    private String writePromotion(int p){
-        return switch (p) {
-            case 1 -> "=Q";
-            case 2 -> "=R";
-            case 3 -> "=K";
-            case 4 -> "=B";
-            default -> "=Q";
-        };
-    }
+    Promotion promotionHandler = new Promotion(false);
     Arrow arrow = new Arrow();
-
-
-    private void manageMoveView(String a){
-        if(player.Colour){
-            movesView.getItems().add(count/2, (count + 2) / 2 + ".  " + a);
-            moveView = (a);
-        }else{
-            movesView.getItems().add(count/2,(count + 2) / 2 + ".  " + moveView + " | " + a);
-            movesView.getItems().removeLast();
-        }
-    }
-    private void resetMoveView(){
-        movesView.getItems().clear();
-    }
-
 }
