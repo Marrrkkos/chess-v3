@@ -155,7 +155,7 @@ public class MoveTree implements Serializable {
     }
 
     /**
-     * Creates every Line from root to end. Its a method for the Training-aspect of this program
+     * Creates every Line from root to end. It's a method for the Training-aspect of this program
      * @return all saved Lines in List form, so you can play vs the bot to train this opening
      */
     public List<ArrayList<Knoten>> erstellePfade() {

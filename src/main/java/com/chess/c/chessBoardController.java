@@ -121,7 +121,7 @@ public class chessBoardController implements Serializable {
             drawOnBoard.removeAllCircles(gridPane);
             possibleBoard.clearBoard();
             drawOnBoard.drawPieces(board,buttonArray,rotation);
-            repaintArrows();
+            arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
         }
     }
     @FXML
@@ -144,7 +144,7 @@ public class chessBoardController implements Serializable {
             drawOnBoard.removeAllCircles(gridPane);
             possibleBoard.clearBoard();
             drawOnBoard.drawPieces(board,buttonArray,rotation);
-            repaintArrows();
+            arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
         }
     }
     @FXML
@@ -170,7 +170,7 @@ public class chessBoardController implements Serializable {
         drawOnBoard.removeAllCircles(gridPane);
         possibleBoard.clearBoard();
         drawOnBoard.drawPieces(board,buttonArray,rotation);
-        repaintArrows();
+        arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
     }
     @FXML
     public void saveLine(){
@@ -322,21 +322,10 @@ public class chessBoardController implements Serializable {
                     node.setMouseTransparent(false);
                 }
             }
-            repaintArrows();
+            arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
         }
     }
-    private void repaintArrows(){
-        ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
-        drawOnBoard.removeAllArrows(gridPane);
-        drawAllArrows(nextMoves);
-        while(!openingsView.getItems().isEmpty()) {
-            openingsView.getItems().removeLast();
-        }
-        for(Turn turn: nextMoves) {
-            notationHandler.setAll(turn.a1, turn.b1, board.getPiece(turn.a1), board.getPiece(turn.b1));
-            openingsView.getItems().add(notationHandler.handleNotation());
-        }
-    }
+
     public void areYouSure(String move1, String move2){
         StackPane overlayPane = new StackPane();
         overlayPane.setStyle("-fx-background-color: rgba(0, 0, 0, 0.5);"); // Transparenter Hintergrund
@@ -363,7 +352,7 @@ public class chessBoardController implements Serializable {
         });
         button2.setOnMouseClicked(mouseEvent -> {
             overlayPane.setVisible(false);
-            repaintArrows();
+            arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
             removeButton.setSelected(false);
         });
         label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
@@ -415,7 +404,7 @@ public class chessBoardController implements Serializable {
             }
 
             drawOnBoard.drawPieces(board,buttonArray,rotation);
-            repaintArrows();
+            arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
             removeButton.setSelected(false);
 
             String dateiName = "Openings/" + chosenOpening;
@@ -436,7 +425,8 @@ public class chessBoardController implements Serializable {
 
             System.out.println("Objekt geladen: " + moveTree);
             ArrayList<Turn> nextMoves = moveTree.getCurrentChildren(Zuege);
-            drawAllArrows(nextMoves);
+            //drawAllArrows(nextMoves);
+            arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
 
 
             for(Turn turn: nextMoves) {
@@ -867,7 +857,7 @@ public class chessBoardController implements Serializable {
         Zuege.clear();
         drawOnBoard.drawPieces(board,buttonArray,rotation);
         count = 0;
-        repaintArrows();
+        arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
         drawOnBoard.removeAllCircles(gridPane);
         possibleBoard.clearBoard();
     }
@@ -1039,7 +1029,7 @@ public class chessBoardController implements Serializable {
         possibleBoard.clearBoard();
 
         count++;
-        repaintArrows();
+        arrow.repaintArrows(gridPane, moveTree, Zuege, FIELDSIZE);
 
         if (!board.checkCheckmate(Zuege, player.Colour, board)){
             System.out.println("Checkmate");
@@ -1058,19 +1048,8 @@ public class chessBoardController implements Serializable {
             default -> "=Q";
         };
     }
+    Arrow arrow = new Arrow();
 
-    public void drawAllArrows(ArrayList<Turn> Zuege){
-        int arrowID = 0;
-        for(Turn turn: Zuege){
-            if(turn.b1.contains("=")) {
-                drawOnBoard.drawArrow(turn.a1, turn.b1.substring(0, 2),FIELDSIZE, board, gridPane, arrowID);
-            }else{
-                drawOnBoard.drawArrow(turn.a1, turn.b1, FIELDSIZE, board, gridPane, arrowID);
-            }
-            arrowID++;
-        }
-        arrowID = 0;
-    }
 
     private void manageMoveView(String a){
         if(player.Colour){
